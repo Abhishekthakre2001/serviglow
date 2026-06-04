@@ -1,0 +1,123 @@
+@import "tailwindcss";
+
+
+@keyframes fadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fadeUp {
+  animation: fadeUp 0.4s ease;
+}
+
+
+
+@keyframes fadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fadeUp {
+  animation: fadeUp 0.4s ease;
+}
+
+button,
+input[type="button"],
+input[type="submit"],
+input[type="reset"] {
+  cursor: pointer;
+}
+
+/* Chrome, Safari, Edge, Opera */
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+/* Firefox */
+input[type=number] {
+  -moz-appearance: textfield;
+}
+
+
+.ql-editor {
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  word-break: normal;
+  white-space: normal;
+  line-height: 1.7;
+}
+
+.ql-editor * {
+  word-break: normal;
+  overflow-wrap: normal;
+  white-space: normal;
+}
+
+.policy-content,
+.policy-content * {
+  word-break: normal !important;
+  overflow-wrap: normal !important;
+  hyphens: auto !important;
+  white-space: normal !important;
+}
+
+.ql-editor p {
+  margin-bottom: 12px;
+}
+
+.ql-editor img {
+  max-width: 100%;
+  height: auto;
+}
+
+.ql-editor iframe {
+  width: 100%;
+  max-width: 100%;
+}
+
+.ql-editor table {
+  display: block;
+  overflow-x: auto;
+  width: 100%;
+}
+
+.ql-editor pre {
+  overflow-x: auto;
+}
+
+/* scrollbar  */
+/* Thin light gray scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f3f4f6; /* light gray track */
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1; /* soft gray thumb */
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8; /* darker on hover */
+}

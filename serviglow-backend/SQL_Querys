@@ -1,0 +1,332 @@
+-- ============================================================
+-- ServiGlow — MySQL Schema
+-- ============================================================
+
+-- 1. USERS
+CREATE TABLE users (
+  id            INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  first_name    VARCHAR(20)  NOT NULL,
+  last_name     VARCHAR(20)  NOT NULL,
+  email         VARCHAR(255) NOT NULL UNIQUE,
+  phone         VARCHAR(20)  NOT NULL,
+  password      VARCHAR(255) NOT NULL,
+  refresh_token TEXT,
+  role          ENUM('customer','partner','admin') NOT NULL DEFAULT 'customer',
+  -- Customer address (NULL for non-customers)
+  addr_line1    VARCHAR(255),
+  addr_line2    VARCHAR(255),
+  addr_city     VARCHAR(100),
+  addr_state    VARCHAR(100),
+  addr_zip      VARCHAR(20),
+  -- Partner status
+  partner_status ENUM('pending','approved','rejected') DEFAULT NULL,
+  created_at    DATETIME DEFAULT CURRENT_TIMESTAMP,
+  updated_at    DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+
+-- 2. OTP
+CREATE TABLE otps (
+  id            INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  email         VARCHAR(255) NOT NULL,
+  otp           VARCHAR(10)  NOT NULL,
+  expires_at    DATETIME     NOT NULL,
+  is_verified   BOOLEAN      DEFAULT FALSE,
+  type          ENUM('register','login','booking','forgot-password','update') DEFAULT 'register',
+  reference_id  INT UNSIGNED DEFAULT NULL,   -- generic FK; enforce in app layer
+  created_at    DATETIME DEFAULT CURRENT_TIMESTAMP,
+  updated_at    DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+
+-- 3. CATEGORIES
+CREATE TABLE categories (
+  id              INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  category_name   VARCHAR(255) NOT NULL UNIQUE,
+  sub_title       VARCHAR(255) NOT NULL,
+  image           VARCHAR(500) NOT NULL,
+  status          TINYINT(1)   NOT NULL DEFAULT 1,   -- 0=inactive, 1=active
+  created_at      DATETIME DEFAULT CURRENT_TIMESTAMP,
+  updated_at      DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+
+-- 4. SUB-CATEGORIES
+CREATE TABLE sub_categories (
+  id                  INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  sub_category_name   VARCHAR(255) NOT NULL,
+  sub_title           VARCHAR(255) NOT NULL,
+  category_id         INT UNSIGNED NOT NULL,
+  image               VARCHAR(500) NOT NULL,
+  status              TINYINT(1)   NOT NULL DEFAULT 1,
+  created_at          DATETIME DEFAULT CURRENT_TIMESTAMP,
+  updated_at          DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  UNIQUE KEY uq_subcat_category (sub_category_name, category_id),
+  CONSTRAINT fk_subcat_category FOREIGN KEY (category_id) REFERENCES categories (id) ON DELETE CASCADE
+);
+
+-- 5. SERVICES
+CREATE TABLE services (
+  id              INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  title           VARCHAR(255) NOT NULL,
+  subtitle        VARCHAR(255),
+  slug            VARCHAR(255) UNIQUE,
+  about_service   TEXT         NOT NULL,
+  price           DECIMAL(10,2) NOT NULL,
+  estimated_time  VARCHAR(100) NOT NULL,
+  images          JSON,                          -- stores array of up to 3 image URLs
+  key_features    JSON,                          -- stores array of strings
+  category_id     INT UNSIGNED NOT NULL,
+  sub_category_id INT UNSIGNED NOT NULL,
+  is_active       BOOLEAN      DEFAULT TRUE,
+  avg_rating      DECIMAL(3,2) DEFAULT 0.00,
+  total_reviews   INT UNSIGNED DEFAULT 0,
+  created_by      INT UNSIGNED NOT NULL,         -- FK → users
+  created_at      DATETIME DEFAULT CURRENT_TIMESTAMP,
+  updated_at      DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  CONSTRAINT fk_service_category    FOREIGN KEY (category_id)     REFERENCES categories     (id),
+  CONSTRAINT fk_service_subcategory FOREIGN KEY (sub_category_id) REFERENCES sub_categories (id),
+  CONSTRAINT fk_service_creator     FOREIGN KEY (created_by)      REFERENCES users          (id)
+);
+
+-- 6. PARTNER PROFILES
+CREATE TABLE partner_profiles (
+  id                  INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  user_id             INT UNSIGNED NOT NULL UNIQUE,
+  business_name       VARCHAR(255) NOT NULL,
+  category_id         INT UNSIGNED NOT NULL,
+  sub_category_id     INT UNSIGNED NOT NULL,
+  years_of_experience INT UNSIGNED NOT NULL DEFAULT 0,
+  service_areas       JSON         NOT NULL,     -- array of ZIP codes
+  logo                VARCHAR(500),
+  -- Documents
+  doc_business_license VARCHAR(500) NOT NULL,
+  doc_certificate      VARCHAR(500),
+  doc_insurance        VARCHAR(500),
+  about               TEXT,
+  approval_status     ENUM('pending','approved','rejected') DEFAULT 'pending',
+  rejection_reason    TEXT,
+  is_active           BOOLEAN DEFAULT TRUE,
+  is_available        BOOLEAN DEFAULT TRUE,
+  created_at          DATETIME DEFAULT CURRENT_TIMESTAMP,
+  updated_at          DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  CONSTRAINT fk_pp_user        FOREIGN KEY (user_id)         REFERENCES users          (id) ON DELETE CASCADE,
+  CONSTRAINT fk_pp_category    FOREIGN KEY (category_id)     REFERENCES categories     (id),
+  CONSTRAINT fk_pp_subcategory FOREIGN KEY (sub_category_id) REFERENCES sub_categories (id)
+);
+
+-- 7. BOOKINGS
+CREATE TABLE bookings (
+  id               INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  service_id       INT UNSIGNED NOT NULL,
+  service_category INT UNSIGNED NOT NULL,
+  service_type     INT UNSIGNED NOT NULL,
+  customer_id      INT UNSIGNED NOT NULL,
+  partner_id       INT UNSIGNED NOT NULL,
+  booking_date     DATE         NOT NULL,
+  booking_time     VARCHAR(20)  NOT NULL,
+  name             VARCHAR(255) NOT NULL,
+  phone            VARCHAR(20)  NOT NULL,
+  email            VARCHAR(255) NOT NULL,
+  address          TEXT         NOT NULL,
+  city             VARCHAR(100) NOT NULL,
+  zip              VARCHAR(20)  NOT NULL,
+  notes            TEXT,
+  cancel_by_user   BOOLEAN      DEFAULT FALSE,
+  status           ENUM('Pending','Confirmed','Cancelled','Completed','Accept','Reject') DEFAULT 'Pending',
+  is_verified      BOOLEAN      DEFAULT FALSE,
+  created_at       DATETIME DEFAULT CURRENT_TIMESTAMP,
+  updated_at       DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  CONSTRAINT fk_booking_service   FOREIGN KEY (service_id)       REFERENCES services      (id),
+  CONSTRAINT fk_booking_category  FOREIGN KEY (service_category) REFERENCES categories    (id),
+  CONSTRAINT fk_booking_subcat    FOREIGN KEY (service_type)     REFERENCES sub_categories(id),
+  CONSTRAINT fk_booking_customer  FOREIGN KEY (customer_id)      REFERENCES users         (id),
+  CONSTRAINT fk_booking_partner   FOREIGN KEY (partner_id)       REFERENCES users         (id)
+);
+
+-- 8. REVIEWS
+CREATE TABLE reviews (
+  id          INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  customer_id INT UNSIGNED NOT NULL,
+  partner_id  INT UNSIGNED NOT NULL,
+  service_id  INT UNSIGNED NOT NULL,
+  booking_id  INT UNSIGNED,
+  rating      TINYINT      NOT NULL CHECK (rating BETWEEN 1 AND 5),
+  comment     VARCHAR(500),
+  is_approved BOOLEAN      DEFAULT FALSE,
+  created_at  DATETIME DEFAULT CURRENT_TIMESTAMP,
+  updated_at  DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  CONSTRAINT fk_review_customer FOREIGN KEY (customer_id) REFERENCES users    (id),
+  CONSTRAINT fk_review_partner  FOREIGN KEY (partner_id)  REFERENCES users    (id),
+  CONSTRAINT fk_review_service  FOREIGN KEY (service_id)  REFERENCES services (id),
+  CONSTRAINT fk_review_booking  FOREIGN KEY (booking_id)  REFERENCES bookings (id),
+  INDEX idx_review_partner (partner_id)
+);
+
+-- 9. PARTNER REVENUE
+CREATE TABLE partner_revenue (
+  id              INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  service_id      INT UNSIGNED   NOT NULL,
+  partner_id      INT UNSIGNED   NOT NULL,
+  customer_id     INT UNSIGNED   NOT NULL,
+  booking_id      INT UNSIGNED   NOT NULL UNIQUE,
+  revenue         DECIMAL(10,2)  NOT NULL DEFAULT 0,
+  revenue_date    DATE           NOT NULL,
+  revenue_time    VARCHAR(20)    NOT NULL,
+  service_charges DECIMAL(10,2)  DEFAULT 0,
+  created_at      DATETIME DEFAULT CURRENT_TIMESTAMP,
+  updated_at      DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  CONSTRAINT fk_pr_service  FOREIGN KEY (service_id)  REFERENCES services (id),
+  CONSTRAINT fk_pr_partner  FOREIGN KEY (partner_id)  REFERENCES users    (id),
+  CONSTRAINT fk_pr_customer FOREIGN KEY (customer_id) REFERENCES users    (id),
+  CONSTRAINT fk_pr_booking  FOREIGN KEY (booking_id)  REFERENCES bookings (id)
+);
+
+-- 10. CONTACT MESSAGES
+CREATE TABLE contacts (
+  id              INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  name            VARCHAR(255) NOT NULL,
+  email           VARCHAR(255) NOT NULL,
+  subject         VARCHAR(255) NOT NULL,
+  message         TEXT         NOT NULL,
+  viewing_status  BOOLEAN      DEFAULT FALSE,
+  created_at      DATETIME DEFAULT CURRENT_TIMESTAMP,
+  updated_at      DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+
+-- 11. QUOTES
+CREATE TABLE quotes (
+  id              INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  name            VARCHAR(255) NOT NULL,
+  phone           VARCHAR(20)  NOT NULL,
+  email           VARCHAR(255) NOT NULL,
+  service_id      INT UNSIGNED NOT NULL,     -- FK → categories
+  requirement     TEXT         NOT NULL,
+  customer_id     INT UNSIGNED DEFAULT NULL,
+  partner_id      INT UNSIGNED DEFAULT NULL,
+  viewing_status  BOOLEAN      DEFAULT FALSE,
+  status          ENUM('new','contacted','resolved') DEFAULT 'new',
+  created_at      DATETIME DEFAULT CURRENT_TIMESTAMP,
+  updated_at      DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  CONSTRAINT fk_quote_service  FOREIGN KEY (service_id)  REFERENCES categories (id),
+  CONSTRAINT fk_quote_customer FOREIGN KEY (customer_id) REFERENCES users      (id),
+  CONSTRAINT fk_quote_partner  FOREIGN KEY (partner_id)  REFERENCES users      (id)
+);
+
+-- 12. PAYPAL PLANS
+CREATE TABLE paypal_plans (
+  id             INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  plan_key       VARCHAR(50)  NOT NULL UNIQUE,   -- BASIC|MODERN|PREMIUM
+  product_id     VARCHAR(100) NOT NULL,
+  plan_id        VARCHAR(100) NOT NULL,
+  name           VARCHAR(255),
+  status         VARCHAR(50),
+  currency       VARCHAR(10)  DEFAULT 'USD',
+  amount         DECIMAL(10,2) NOT NULL,
+  interval_unit  VARCHAR(20)  DEFAULT 'MONTH',
+  interval_count TINYINT      DEFAULT 1,
+  raw            JSON,
+  created_at     DATETIME DEFAULT CURRENT_TIMESTAMP,
+  updated_at     DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+
+-- 13. SUBSCRIPTIONS
+CREATE TABLE subscriptions (
+  id                      INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  user_id                 INT UNSIGNED NOT NULL,
+  username                VARCHAR(255),
+  name                    VARCHAR(255),
+  email                   VARCHAR(255) NOT NULL,
+  plan_key                VARCHAR(50)  NOT NULL,
+  price                   DECIMAL(10,2) NOT NULL,
+  paypal_subscription_id  VARCHAR(255) NOT NULL UNIQUE,
+  subscription            BOOLEAN      DEFAULT FALSE,
+  status                  ENUM('PENDING','ACTIVE','CANCELLED','EXPIRED') DEFAULT 'PENDING',
+  start_date              DATETIME,
+  end_date                DATETIME,
+  created_at              DATETIME DEFAULT CURRENT_TIMESTAMP,
+  updated_at              DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  CONSTRAINT fk_sub_user FOREIGN KEY (user_id) REFERENCES users (id)
+);
+
+-- ============================================================
+-- CMS / CONTENT TABLES  (flat equivalents of embedded docs)
+-- ============================================================
+
+-- 14. BANNER COUNTERS
+CREATE TABLE banner_counters (
+  id         INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  number     VARCHAR(50)  NOT NULL DEFAULT '0',
+  title      VARCHAR(255) NOT NULL DEFAULT 'Counter',
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+
+-- 15. FOOTER (singleton row — one record expected)
+CREATE TABLE footer (
+  id              INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  company_name    VARCHAR(255) DEFAULT 'ServiGlow',
+  description     TEXT,
+  logo            VARCHAR(500),
+  company_address TEXT,
+  phone           VARCHAR(30)  DEFAULT '+91 99999 88888',
+  email           VARCHAR(255) DEFAULT 'support@serviglow.com',
+  contact_name    VARCHAR(255) DEFAULT 'ServiGlow Inc.',
+  copyright       VARCHAR(255) DEFAULT '© 2026 ServiGlow. All rights reserved.',
+  created_at      DATETIME DEFAULT CURRENT_TIMESTAMP,
+  updated_at      DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+
+-- Footer highlights (one-to-many child of footer)
+CREATE TABLE footer_highlights (
+  id         INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  footer_id  INT UNSIGNED NOT NULL,
+  text       VARCHAR(500) NOT NULL,
+  icon       VARCHAR(100) DEFAULT '',
+  CONSTRAINT fk_fh_footer FOREIGN KEY (footer_id) REFERENCES footer (id) ON DELETE CASCADE
+);
+
+-- Footer social links
+CREATE TABLE footer_socials (
+  id         INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  footer_id  INT UNSIGNED NOT NULL,
+  platform   VARCHAR(50)  DEFAULT 'facebook',
+  icon       VARCHAR(100) DEFAULT '',
+  link       VARCHAR(500) DEFAULT '#',
+  CONSTRAINT fk_fs_footer FOREIGN KEY (footer_id) REFERENCES footer (id) ON DELETE CASCADE
+);
+
+-- Footer quick links
+CREATE TABLE footer_quick_links (
+  id        INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  footer_id INT UNSIGNED NOT NULL,
+  label     VARCHAR(100) DEFAULT 'Home',
+  link      VARCHAR(500) DEFAULT '/',
+  CONSTRAINT fk_fql_footer FOREIGN KEY (footer_id) REFERENCES footer (id) ON DELETE CASCADE
+);
+
+-- Footer bottom links (privacy policy etc.)
+CREATE TABLE footer_bottom_links (
+  id        INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  footer_id INT UNSIGNED NOT NULL,
+  label     VARCHAR(100) DEFAULT 'Privacy Policy',
+  link      VARCHAR(500) DEFAULT '#',
+  CONSTRAINT fk_fbl_footer FOREIGN KEY (footer_id) REFERENCES footer (id) ON DELETE CASCADE
+);
+
+-- 16. HOME SECTION (singleton)
+CREATE TABLE home_section (
+  id                    INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  why_choose_us_heading VARCHAR(255) DEFAULT 'Why Choose Us?',
+  quick_support_heading VARCHAR(255) DEFAULT 'Quick Support',
+  quick_support_desc    TEXT,
+  phone_number          VARCHAR(30)  DEFAULT '+91 99999 88888',
+  created_at            DATETIME DEFAULT CURRENT_TIMESTAMP,
+  updated_at            DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+
+-- Why-choose-us bullet points
+CREATE TABLE why_choose_us_points (
+  id              INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  home_section_id INT UNSIGNED NOT NULL,
+  text            VARCHAR(500) NOT NULL,
+  icon            VARCHAR(100) DEFAULT 'check',
+  CONSTRAINT fk_wcu_home FOREIGN KEY (home_section_id) REFERENCES home_section (id) ON DELETE CASCADE
+);

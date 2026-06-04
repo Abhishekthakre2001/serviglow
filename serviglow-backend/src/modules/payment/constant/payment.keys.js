@@ -1,0 +1,1 @@
+export const PLAN_KEYS = ["BASIC", "MODERN", "PREMIUM"];
