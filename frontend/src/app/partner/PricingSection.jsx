@@ -181,7 +181,7 @@ export default function PricingSection() {
         res?.data?.links?.find((l) => l?.rel === "approve")?.href;
 
       if (approvalUrl) {
-        // window.location.href = approvalUrl;
+        window.location.href = approvalUrl;
         return;
       }
 
