@@ -104,6 +104,8 @@ class Subscription {
       page = 1,
       limit = 20,
       status,
+      startDate,
+      endDate,
     } = query;
 
     console.log("query", query);
@@ -119,6 +121,17 @@ class Subscription {
     if (status) {
       where += " AND status = ?";
       params.push(status);
+    }
+
+    // Date range filter
+    if (startDate) {
+      where += " AND DATE(created_at) >= ?";
+      params.push(startDate);
+    }
+
+    if (endDate) {
+      where += " AND DATE(created_at) <= ?";
+      params.push(endDate);
     }
 
     // 📊 COUNT QUERY

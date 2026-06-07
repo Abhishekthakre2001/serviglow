@@ -38,6 +38,9 @@ export default function SubscriptionsPage() {
     const [loadingPending, setLoadingPending] = useState(false);
     const [loadingExpired, setLoadingExpired] = useState(false);
 
+    const [startDate, setStartDate] = useState("");
+    const [endDate, setEndDate] = useState("");
+
     /* ================= TABLE COLUMNS ================= */
     const columns = [
         { key: "name", label: "Name" },
@@ -87,45 +90,109 @@ export default function SubscriptionsPage() {
         }));
 
     /* ================= FETCH ALL TABS (ON LOAD) ================= */
+    // useEffect(() => {
+    //     let alive = true;
+
+    //     (async () => {
+    //         try {
+    //             setLoadingAll(true);
+
+    //             const [
+    //                 allRes,
+    //                 activeRes,
+    //                 pendingRes,
+    //                 cancelledRes,
+    //                 expiredRes,
+    //             ] = await Promise.all([
+    //                 paymentApi.getSubscriptions(),
+    //                 paymentApi.getSubscriptionsByStatus("ACTIVE"),
+    //                 paymentApi.getSubscriptionsByStatus("PENDING"),
+    //                 paymentApi.getSubscriptionsByStatus("CANCELLED"),
+    //                 paymentApi.getSubscriptionsByStatus("EXPIRED"),
+    //             ]);
+
+    //             if (!alive) return;
+
+    //             // IMPORTANT: axios response => res.data.data
+    //             setAllSubs(formatRows(allRes?.data?.data || []));
+    //             setActiveSubs(formatRows(activeRes?.data?.data || []));
+    //             setPendingSubs(formatRows(pendingRes?.data?.data || []));
+    //             setCancelSubs(formatRows(cancelledRes?.data?.data || []));
+    //             setExpiredSubs(formatRows(expiredRes?.data?.data || []));
+    //         } catch (err) {
+    //             console.error("Fetch subscriptions error:", err);
+    //         } finally {
+    //             if (alive) setLoadingAll(false);
+    //         }
+    //     })();
+
+    //     return () => {
+    //         alive = false;
+    //     };
+    // }, []);
+
+
+    const fetchSubscriptions = async () => {
+        try {
+            setLoadingAll(true);
+
+            const [
+                allRes,
+                activeRes,
+                pendingRes,
+                cancelledRes,
+                expiredRes,
+            ] = await Promise.all([
+                paymentApi.getSubscriptions(
+                    1,
+                    10,
+                    startDate,
+                    endDate
+                ),
+                paymentApi.getSubscriptionsByStatus(
+                    "ACTIVE",
+                    1,
+                    10,
+                    startDate,
+                    endDate
+                ),
+                paymentApi.getSubscriptionsByStatus(
+                    "PENDING",
+                    1,
+                    10,
+                    startDate,
+                    endDate
+                ),
+                paymentApi.getSubscriptionsByStatus(
+                    "CANCELLED",
+                    1,
+                    10,
+                    startDate,
+                    endDate
+                ),
+                paymentApi.getSubscriptionsByStatus(
+                    "EXPIRED",
+                    1,
+                    10,
+                    startDate,
+                    endDate
+                ),
+            ]);
+
+            setAllSubs(formatRows(allRes?.data?.data || []));
+            setActiveSubs(formatRows(activeRes?.data?.data || []));
+            setPendingSubs(formatRows(pendingRes?.data?.data || []));
+            setCancelSubs(formatRows(cancelledRes?.data?.data || []));
+            setExpiredSubs(formatRows(expiredRes?.data?.data || []));
+        } catch (err) {
+            console.error(err);
+        } finally {
+            setLoadingAll(false);
+        }
+    };
+
     useEffect(() => {
-        let alive = true;
-
-        (async () => {
-            try {
-                setLoadingAll(true);
-
-                const [
-                    allRes,
-                    activeRes,
-                    pendingRes,
-                    cancelledRes,
-                    expiredRes,
-                ] = await Promise.all([
-                    paymentApi.getSubscriptions(),
-                    paymentApi.getSubscriptionsByStatus("ACTIVE"),
-                    paymentApi.getSubscriptionsByStatus("PENDING"),
-                    paymentApi.getSubscriptionsByStatus("CANCELLED"),
-                    paymentApi.getSubscriptionsByStatus("EXPIRED"),
-                ]);
-
-                if (!alive) return;
-
-                // IMPORTANT: axios response => res.data.data
-                setAllSubs(formatRows(allRes?.data?.data || []));
-                setActiveSubs(formatRows(activeRes?.data?.data || []));
-                setPendingSubs(formatRows(pendingRes?.data?.data || []));
-                setCancelSubs(formatRows(cancelledRes?.data?.data || []));
-                setExpiredSubs(formatRows(expiredRes?.data?.data || []));
-            } catch (err) {
-                console.error("Fetch subscriptions error:", err);
-            } finally {
-                if (alive) setLoadingAll(false);
-            }
-        })();
-
-        return () => {
-            alive = false;
-        };
+        fetchSubscriptions();
     }, []);
 
     /* ================= OPTIONAL: REFRESH ONE TAB ================= */
@@ -242,6 +309,52 @@ export default function SubscriptionsPage() {
         <AdminGuard>
             <AdminLayout>
                 <div className="max-full w-full mx-auto">
+                    <div className="flex flex-wrap items-end gap-4 mb-5">
+                        <div>
+                            <label className="block text-sm font-medium mb-1">
+                                Start Date
+                            </label>
+                            <input
+                                type="date"
+                                value={startDate}
+                                onChange={(e) => setStartDate(e.target.value)}
+                                className="border rounded-md px-3 py-2"
+                            />
+                        </div>
+
+                        <div>
+                            <label className="block text-sm font-medium mb-1">
+                                End Date
+                            </label>
+                            <input
+                                type="date"
+                                value={endDate}
+                                onChange={(e) => setEndDate(e.target.value)}
+                                className="border rounded-md px-3 py-2"
+                            />
+                        </div>
+
+                        <button
+                            onClick={fetchSubscriptions}
+                            className="px-4 py-2 bg-blue-600 text-white rounded-md"
+                        >
+                            Apply Filter
+                        </button>
+
+                        <button
+                            onClick={() => {
+                                setStartDate("");
+                                setEndDate("");
+
+                                setTimeout(() => {
+                                    fetchSubscriptions();
+                                }, 0);
+                            }}
+                            className="px-4 py-2 bg-gray-500 text-white rounded-md"
+                        >
+                            Reset
+                        </button>
+                    </div>
                     <div className="w-full overflow-x-auto">
                         <Tabs tabs={tabs} />
                     </div>

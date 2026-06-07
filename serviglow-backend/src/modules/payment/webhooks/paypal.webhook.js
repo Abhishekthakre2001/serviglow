@@ -67,6 +67,7 @@ import { paypalRequest } from "../../../config/paypal.js";
 import Subscription from "../models/subscription.model.js";
 import { addOneMonth } from "../../../utils/date.js";
 import { sendMail } from "../../../utils/sendMail.js";
+import { generateInvoicePdf } from "../../../utils/generateInvoicePdf.js";
 
 // ======================================================
 // PAYPAL WEBHOOK HANDLER
@@ -157,6 +158,12 @@ export const paypalWebhookHandler = async (req, res) => {
         endDate,
       });
 
+      const pdfBuffer = await generateInvoicePdf({
+        ...subscription,
+        start_date: startDate,
+        end_date: endDate,
+      });
+
       await sendMail({
         to: customerEmail,
         subject: "Subscription Activated - ServiGlow",
@@ -165,6 +172,13 @@ export const paypalWebhookHandler = async (req, res) => {
           start_date: startDate,
           end_date: endDate,
         }),
+
+        attachments: [
+          {
+            name: `invoice-${subscription.paypal_subscription_id}.pdf`,
+            content: pdfBuffer.toString("base64"),
+          }
+        ],
       });
 
       console.log("✅ Activation email sent");
