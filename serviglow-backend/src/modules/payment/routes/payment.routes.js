@@ -8,7 +8,9 @@ import {
   upsertPlanDetails,
   getAllPlanDetails,
   getPlanDetailsByKey,
-  migrateSubscriptionPlan
+  migrateSubscriptionPlan,
+  refundSubscription,
+  getAllRefunds
 } from "../controllers/payment.controller.js";
 import { verifyUser } from "../../../middleware/auth.middleware.js";
 import { authorizeRoles } from "../../../middleware/role.middleware.js";
@@ -92,6 +94,17 @@ router.get(
 router.get(
   "/plan-details/:planKey",
   getPlanDetailsByKey
+);
+
+router.post(
+  "/subscription/:subscriptionId/refund",
+  refundSubscription
+);
+
+// refund list
+router.get(
+  "/refunds",
+  getAllRefunds
 );
 
 export default router;

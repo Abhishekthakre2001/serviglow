@@ -6,7 +6,8 @@ import {
   getAdminDashboard, getAdminLast7DaysBookings, updateAdminProfile,
   upsertFooter, getFooter, upsertHomeSection, getHomeSection,
   updateBanner, getBanner,
-  getPolicies, upsertPolicy, deletePolicy, getPolicy, getAdmins, updateAdmin, deleteAdmin, updateAdminStatus, updateAdminPermissions, getAdminPermissions
+  getPolicies, upsertPolicy, deletePolicy, getPolicy, getAdmins, updateAdmin, deleteAdmin, updateAdminStatus, updateAdminPermissions, getAdminPermissions,upsertBookingTerms,
+  getBookingTerms
 } from "../controllers/admin.controller.js";
 import { verifyUser } from "../../../middleware/auth.middleware.js";
 import { authorizeRoles } from "../../../middleware/role.middleware.js";
@@ -51,5 +52,14 @@ router.patch("/admins/:id/status", ...adminOnly, updateAdminStatus);
 router.patch("/admins/:id/permissions", ...adminOnly, updateAdminPermissions);
 
 router.get("/admins/:id/permissions", getAdminPermissions);
+
+// Public
+router.get("/booking-terms", getBookingTerms);
+
+// Admin Only
+router.post(
+  "/booking-terms",
+  upsertBookingTerms
+);
 
 export default router;

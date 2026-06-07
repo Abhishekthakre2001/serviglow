@@ -1040,3 +1040,34 @@ export const getAdminPermissions = asyncHandler(async (req, res) => {
     data: permissions[0],
   });
 });
+
+
+export const upsertBookingTerms = asyncHandler(async (req, res) => {
+  const { title, content } = req.body;
+
+  if (!content) {
+    return res.status(400).json({
+      success: false,
+      message: "Content is required",
+    });
+  }
+
+  await AdminModel.upsert({
+    title: title || "Booking Terms & Conditions",
+    content,
+  });
+
+  res.status(200).json({
+    success: true,
+    message: "Booking Terms & Conditions saved successfully",
+  });
+});
+
+export const getBookingTerms = asyncHandler(async (req, res) => {
+  const data = await AdminModel.get();
+
+  res.status(200).json({
+    success: true,
+    data,
+  });
+});

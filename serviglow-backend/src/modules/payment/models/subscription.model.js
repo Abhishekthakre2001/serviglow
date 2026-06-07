@@ -361,6 +361,79 @@ class Subscription {
       paypalSubscriptionId,
     ]);
   }
+
+  static async findByPaypalSubscriptionId(
+    paypalSubscriptionId
+  ) {
+    const [rows] = await pool.execute(
+      `
+    SELECT *
+    FROM subscriptions
+    WHERE paypal_subscription_id = ?
+    LIMIT 1
+    `,
+      [paypalSubscriptionId]
+    );
+
+    return rows[0] || null;
+  }
+
+
+  static async createRefund(data) {
+    const {
+      partnerId,
+      paypalRefundId,
+      paypalSubscriptionId,
+      paypalCaptureId,
+      amount,
+      currency,
+      status,
+      rawResponse,
+    } = data;
+
+    await pool.execute(
+      `
+    INSERT INTO refunds
+    (
+      partner_id,
+      paypal_refund_id,
+      paypal_subscription_id,
+      paypal_capture_id,
+      amount,
+      currency,
+      status,
+      raw_response
+    )
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+    `,
+      [
+        partnerId,
+        paypalRefundId,
+        paypalSubscriptionId,
+        paypalCaptureId,
+        amount,
+        currency,
+        status,
+        JSON.stringify(rawResponse),
+      ]
+    );
+  }
+
+  static async getrefundlist() {
+    const [rows] = await pool.execute(`
+    SELECT
+      r.*,
+      s.name,
+      s.email,
+      s.username
+    FROM refunds r
+    LEFT JOIN subscriptions s
+      ON s.user_id = r.partner_id
+    ORDER BY r.id DESC
+  `);
+
+    return rows;
+  }
 }
 
 

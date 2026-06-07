@@ -394,4 +394,41 @@ export const AdminModel = {
     await pool.query(`DELETE FROM policies WHERE id = ?`, [id]);
     return true;
   },
+
+
+  // t&c Booking
+  async upsert(data) {
+    const [existing] = await pool.query(
+      "SELECT id FROM booking_terms_conditions LIMIT 1"
+    );
+
+    if (existing.length) {
+      await pool.query(
+        `UPDATE booking_terms_conditions
+         SET title = ?, content = ?
+         WHERE id = ?`,
+        [data.title, data.content, existing[0].id]
+      );
+
+      return existing[0].id;
+    }
+
+    const [result] = await pool.query(
+      `INSERT INTO booking_terms_conditions
+       (title, content)
+       VALUES (?, ?)`,
+      [data.title, data.content]
+    );
+
+    return result.insertId;
+  },
+
+  async get() {
+    const [rows] = await pool.query(
+      "SELECT * FROM booking_terms_conditions LIMIT 1"
+    );
+
+    return rows.length ? rows[0] : null;
+  }
+
 };

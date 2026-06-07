@@ -507,6 +507,122 @@ export const getPlanDetailsByKey = async (req, res) => {
   }
 };
 
+// POST /api/v1/payment/subscription/:subscriptionId/refund
+export const refundSubscription = async (
+  req,
+  res
+) => {
+  try {
+    const { subscriptionId } = req.params;
+
+    // Get subscription from DB
+    const subscription =
+      await Subscription.findByPaypalSubscriptionId(
+        subscriptionId
+      );
+
+    if (!subscription) {
+      return res.status(404).json({
+        success: false,
+        message: "Subscription not found",
+      });
+    }
+
+    const partnerId = subscription.user_id;
+
+    // Get transactions
+    const startDate = new Date();
+    startDate.setMonth(
+      startDate.getMonth() - 1
+    );
+
+    const transactions = await paypalRequest(
+      "GET",
+      `/v1/billing/subscriptions/${subscriptionId}/transactions?start_time=${startDate.toISOString()}&end_time=${new Date().toISOString()}`
+    );
+
+    const transaction =
+      transactions?.transactions?.[0];
+
+    if (!transaction?.id) {
+      return res.status(404).json({
+        success: false,
+        message: "Transaction not found",
+      });
+    }
+
+    const captureId = transaction.id;
+
+    // Check if already refunded
+    // const existingRefund =
+    //   await Subscription.findRefundByCaptureId(
+    //     captureId
+    //   );
+
+    // if (existingRefund) {
+    //   return res.status(400).json({
+    //     success: false,
+    //     message:
+    //       "This payment has already been refunded",
+    //   });
+    // }
+
+    // Refund
+    const refund = await paypalRequest(
+      "POST",
+      `/v2/payments/captures/${captureId}/refund`,
+      {}
+    );
+
+    // Save refund record
+    await Subscription.createRefund({
+      partnerId,
+      paypalRefundId: refund.id,
+      paypalSubscriptionId:
+        subscriptionId,
+      paypalCaptureId: captureId,
+      amount: refund.amount?.value,
+      currency:
+        refund.amount?.currency_code,
+      status: refund.status,
+      rawResponse: refund,
+    });
+
+    return res.status(200).json({
+      success: true,
+      message: "Refund successful",
+      data: refund,
+    });
+  } catch (err) {
+    console.log(
+      "REFUND ERROR",
+      err?.response?.data || err.message
+    );
+
+    return res.status(500).json({
+      success: false,
+      message:
+        err?.response?.data || err.message,
+    });
+  }
+};
+
+export const getAllRefunds = async (req, res) => {
+  try {
+    const refunds = await Subscription.getrefundlist();
+
+    return res.status(200).json({
+      success: true,
+      data: refunds,
+    });
+  } catch (err) {
+    return res.status(500).json({
+      success: false,
+      message: err.message,
+    });
+  }
+};
+
 // POST /api/v1/payment/subscription/:subscriptionId/migrate
 export const migrateSubscriptionPlan = async (req, res) => {
   try {
