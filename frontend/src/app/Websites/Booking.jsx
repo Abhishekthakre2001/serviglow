@@ -18,6 +18,8 @@ import serviceApi from "@/services/serviceApi";
 import { useParams } from "next/navigation";
 import categoryApi from "@/services/category";
 import subcategoryApi from "@/services/subcategory";
+import cmsApi from "@/services/cms";
+
 export default function BookingServiceForm() {
   const router = useRouter();
   const [step, setStep] = useState(1);
@@ -27,7 +29,8 @@ export default function BookingServiceForm() {
   const [subCategories, setSubCategories] = useState([]);
   const { bookService } = serviceApi;
   const [BtnLoading, BtnsetLoading] = useState(false);
-  const [errors, setErrors] = useState({})
+  const [errors, setErrors] = useState({});
+  const [bookingTerms, setBookingTerms] = useState(null);
   const [formData, setFormData] = useState({
     serviceId: "",
     serviceCategory: "",
@@ -57,6 +60,18 @@ export default function BookingServiceForm() {
   const [service, setService] = useState(null);
   const [date, setDate] = useState(null);
   const [time, setTime] = useState("");
+
+  const fetchBookingTerms = async () => {
+    try {
+      const res = await cmsApi.getBookingTerms();
+
+      if (res.data?.success) {
+        setBookingTerms(res.data.data);
+      }
+    } catch (error) {
+      console.error("Failed to fetch booking terms", error);
+    }
+  };
 
   const update = (key, value) =>
     setFormData((prev) => ({ ...prev, [key]: value }));
@@ -107,7 +122,7 @@ export default function BookingServiceForm() {
 
     const Token = localStorage.getItem("accessToken");
 
-    console.log("Token", Token);
+    // console.log("Token", Token);
 
     if (Token === null) {
       setConfirmationModal({
@@ -266,6 +281,7 @@ export default function BookingServiceForm() {
   }, [serviceId]);
   useEffect(() => {
     fetchData();
+    fetchBookingTerms();
   }, []);
 
   console.log("VAYRG", service);
@@ -682,40 +698,23 @@ export default function BookingServiceForm() {
 
 
               {/* Booking Terms & Conditions */}
-              <div className="border rounded-xl p-4 h-48 overflow-y-auto bg-gray-50 text-sm text-gray-700">
-                <h4 className="font-semibold mb-3">Booking Terms & Conditions</h4>
+              <div className="border rounded-xl p-4 h-48 overflow-y-auto bg-gray-50">
+                <h4 className="font-semibold mb-3 text-gray-900">
+                  {bookingTerms?.title || "Booking Terms & Conditions"}
+                </h4>
 
-                <ul className="list-disc pl-5 space-y-2">
-                  <li>
-                    All service bookings are subject to partner availability and confirmation.
-                  </li>
-                  <li>
-                    Customers must provide accurate contact and address information.
-                  </li>
-                  <li>
-                    Service schedules may change due to unforeseen circumstances.
-                  </li>
-                  <li>
-                    Cancellation requests should be made at least 24 hours before the
-                    scheduled service time.
-                  </li>
-                  <li>
-                    Payments, if applicable, must be completed according to the agreed
-                    service terms.
-                  </li>
-                  <li>
-                    Service providers reserve the right to refuse service in unsafe or
-                    inappropriate conditions.
-                  </li>
-                  <li>
-                    Any disputes regarding service quality should be reported within 48
-                    hours of service completion.
-                  </li>
-                  <li>
-                    By proceeding with the booking, you agree to our Privacy Policy and
-                    Terms of Service.
-                  </li>
-                </ul>
+                {bookingTerms?.content ? (
+                  <div
+                    className="prose prose-sm max-w-none text-gray-700"
+                    dangerouslySetInnerHTML={{
+                      __html: bookingTerms.content,
+                    }}
+                  />
+                ) : (
+                  <p className="text-gray-500">
+                    Terms & Conditions not available.
+                  </p>
+                )}
               </div>
 
               {/* Terms */}

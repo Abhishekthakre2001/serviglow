@@ -229,7 +229,7 @@ export default function Users() {
 
         // built-in actions
         onView={handleView}
-        // onDelete={handleDelete}
+        onDelete={handleDelete}
 
         // server pagination
         serverSide={true}

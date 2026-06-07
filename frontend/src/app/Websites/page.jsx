@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 
 import Services_Listing from './ServicesCategory';
 import HeroSection from './HeroSection';
@@ -34,11 +34,18 @@ export default function Index({ setPageLoading }) {
     }
   };
 
+  const [zipCode, setZipCode] = useState("");
+
   return (
     <>
-      <HeroSection />
+      <HeroSection
+        zipCode={zipCode}
+        setZipCode={setZipCode}
+      />
       <CounterSection />
-      <Services_Listing />
+      <Services_Listing
+        zipCode={zipCode}
+      />
       <ReviewsSection />
       <ContactSection />
     </>

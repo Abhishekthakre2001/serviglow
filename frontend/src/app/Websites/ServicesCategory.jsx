@@ -6,38 +6,42 @@ import serviceApi from "@/services/serviceApi";
 
 const BASE_URL = process.env.NEXT_PUBLIC_IMAGE_BASE_URL;
 
-export default function ServicesPremium() {
+export default function ServicesPremium({
+  zipCode,
+}) {
   const [categories, setCategories] = useState([]);
   const [showAll, setShowAll] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [zipCode, setZipCode] = useState("");
+  // const [zipCode, setZipCode] = useState("");
 
   const router = useRouter();
 
-  useEffect(() => {
-    loadCategories();
-  }, []);
+ useEffect(() => {
+  console.log("zipCode", zipCode);
 
-  const handleZipChange = async (e) => {
+  loadCategories(zipCode || "");
+}, [zipCode]);
 
-    const value = e.target.value;
+  // const handleZipChange = async (e) => {
 
-    setZipCode(value);
+  //   const value = e.target.value;
 
-    // call api after 3 characters
-    if (value.length >= 3) {
+  //   setZipCode(value);
 
-      loadCategories(value);
+  //   // call api after 3 characters
+  //   if (value.length >= 3) {
 
-    }
+  //     loadCategories(value);
 
-    // reset all data when empty
-    if (value.length === 0) {
+  //   }
 
-      loadCategories();
+  //   // reset all data when empty
+  //   if (value.length === 0) {
 
-    }
-  };
+  //     loadCategories();
+
+  //   }
+  // };
 
   const loadCategories = async (zip = "") => {
     try {
@@ -78,7 +82,7 @@ export default function ServicesPremium() {
           </h2>
         </div>
 
-        <div className="mb-8 flex justify-center">
+        {/* <div className="mb-8 flex justify-center">
           <div className="w-full max-w-md">
 
             <input
@@ -90,7 +94,7 @@ export default function ServicesPremium() {
             />
 
           </div>
-        </div>
+        </div> */}
 
         {loading ? (
           <div className="flex justify-center py-20">

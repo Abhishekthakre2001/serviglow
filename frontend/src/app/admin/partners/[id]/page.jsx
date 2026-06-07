@@ -52,6 +52,9 @@ export default function PartnerDetails() {
       { key: "Business License", value: partner.doc_business_license },
       { key: "Certificate", value: partner.doc_certificate },
       { key: "Insurance", value: partner.doc_insurance },
+      { key: "Tax ID", value: partner.doc_tax_id },
+      { key: "Corporation Certificate", value: partner.doc_corporation_cert },
+      { key: "Government ID", value: partner.doc_gov_id },
     ]
     : [];
 
@@ -219,6 +222,18 @@ export default function PartnerDetails() {
 
                 <InfoItem label="Sub Category">
                   {partner?.sub_category_name}
+                </InfoItem>
+
+                <InfoItem label="Business Address">
+                  {partner?.business_address || "-"}
+                </InfoItem>
+
+                <InfoItem label="City">
+                  {partner?.city || "-"}
+                </InfoItem>
+
+                <InfoItem label="State">
+                  {partner?.state || "-"}
                 </InfoItem>
 
                 <InfoItem label="Experience">

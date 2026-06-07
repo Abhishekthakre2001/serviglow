@@ -30,6 +30,33 @@ const cmsApi = {
   updatePlan: (planKey, payload) =>
     axiosInstance.post(`/payment/plans-update/${planKey}`, payload),
 
+  getBookingTerms: () =>
+    axiosInstance.get("/admin/booking-terms"),
+
+  upsertBookingTerms: (data) =>
+    axiosInstance.post("/admin/booking-terms", data),
+
+  // Get all pages
+  getPages: () => axiosInstance.get("/admin/pages"),
+
+  // Get single page by ID
+  getPageById: (id) => axiosInstance.get(`/admin/pages/${id}`),
+
+  // Create page
+  createPage: (payload) =>
+    axiosInstance.post("/admin/createpage", payload),
+
+  // Update page
+  updatePage: (id, payload) =>
+    axiosInstance.put(`/admin/pages/${id}`, payload),
+
+  // Delete page
+  deletePage: (id) =>
+    axiosInstance.delete(`/admin/pages/${id}`),
+
+   getPageBySlug: (slug) =>
+    axiosInstance.get(`/admin/pages/${slug}`),
+
 };
 
 export default cmsApi;

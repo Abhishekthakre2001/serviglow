@@ -12,7 +12,7 @@ const loginUrl = "https://blog.deveraa.com/login";
 // REGISTER ADMIN
 // ══════════════════════════════════════════════
 export const registerAdmin = asyncHandler(async (req, res) => {
-  const { firstName, lastName, email, password, phone } = req.body;
+  const { firstName, lastName, email, password, phone, designation } = req.body;
 
   if (!firstName || !lastName || !email || !password || !phone) {
     return res.status(400).json({ success: false, message: "All fields are required" });
@@ -29,15 +29,15 @@ export const registerAdmin = asyncHandler(async (req, res) => {
 
   const hashed = await bcrypt.hash(password, 10);
   const [result] = await pool.query(
-    `INSERT INTO users (first_name, last_name, email, password, phone, role)
-     VALUES (?, ?, ?, ?, ?, 'admin')`,
-    [firstName.trim(), lastName.trim(), formattedEmail, hashed, phone]
+    `INSERT INTO users (first_name, last_name, email, password, phone, role, designation)
+     VALUES (?, ?, ?, ?, ?, 'admin', ?)`,
+    [firstName.trim(), lastName.trim(), formattedEmail, hashed, phone, designation || null]
   );
 
   return res.status(201).json({
     success: true,
     message: "Admin registered successfully",
-    data: { id: result.insertId, email: formattedEmail, role: "admin" },
+    data: { id: result.insertId, email: formattedEmail, role: "admin", designation: designation || null },
   });
 });
 
@@ -46,7 +46,7 @@ export const registerAdmin = asyncHandler(async (req, res) => {
 // ══════════════════════════════════════════════
 export const updateAdminProfile = asyncHandler(async (req, res) => {
   const adminId = req.user.id;
-  const { firstName, lastName, email, phone } = req.body;
+  const { firstName, lastName, email, phone, designation } = req.body;
 
   const [adminRows] = await pool.query(
     "SELECT * FROM users WHERE id = ? AND role IN ('admin', 'superadmin') LIMIT 1",
@@ -58,7 +58,7 @@ export const updateAdminProfile = asyncHandler(async (req, res) => {
     return res.status(404).json({ success: false, message: "Admin not found" });
   }
 
-  const hasUpdate = [firstName, lastName, email, phone].some(v => v !== undefined);
+  const hasUpdate = [firstName, lastName, email, phone, designation].some(v => v !== undefined);
   if (!hasUpdate) {
     return res.status(400).json({ success: false, message: "No data provided for update" });
   }
@@ -673,6 +673,7 @@ export const getAdmins = asyncHandler(async (req, res) => {
       id,
       first_name,
       last_name,
+      designation,
       email,
       phone,
       status,
@@ -702,6 +703,7 @@ export const updateAdmin = asyncHandler(async (req, res) => {
     lastName,
     email,
     phone,
+    designation,
   } = req.body;
 
   const [existing] = await pool.query(
@@ -726,7 +728,8 @@ export const updateAdmin = asyncHandler(async (req, res) => {
       first_name = ?,
       last_name = ?,
       email = ?,
-      phone = ?
+      phone = ?,
+      designation = ?
     WHERE id = ?
     `,
     [
@@ -734,6 +737,7 @@ export const updateAdmin = asyncHandler(async (req, res) => {
       lastName,
       email,
       phone,
+      designation || null,
       id,
     ]
   );
@@ -1069,5 +1073,137 @@ export const getBookingTerms = asyncHandler(async (req, res) => {
   res.status(200).json({
     success: true,
     data,
+  });
+});
+
+
+export const createPage = asyncHandler(async (req, res) => {
+  const { title, subtitle, slug, content, status } = req.body;
+
+  if (!title || !content) {
+    return res.status(400).json({
+      success: false,
+      message: "Title and content are required",
+    });
+  }
+
+  const formattedSlug = title.trim().toLowerCase().replace(/\s+/g, "-");
+
+  const [existing] = await pool.query(
+    "SELECT id FROM pages WHERE slug = ?",
+    [formattedSlug]
+  );
+
+  if (existing.length) {
+    return res.status(409).json({
+      success: false,
+      message: "Slug already exists",
+    });
+  }
+
+  const [result] = await pool.query(
+    `INSERT INTO pages (title, subtitle, slug, content, status)
+     VALUES (?, ?, ?, ?, ?)`,
+    [
+      title.trim(),
+      subtitle || null,
+      formattedSlug,
+      JSON.stringify(content),
+      status || "draft",
+    ]
+  );
+
+  return res.status(201).json({
+    success: true,
+    message: "Page created successfully",
+    data: {
+      id: result.insertId,
+      slug: formattedSlug,
+    },
+  });
+});
+
+export const getPageBySlug = asyncHandler(async (req, res) => {
+  const { slug } = req.params;
+
+  const [rows] = await pool.query(
+    "SELECT * FROM pages WHERE slug = ? AND status = 'published'",
+    [slug]
+  );
+
+  if (!rows.length) {
+    return res.status(404).json({
+      success: false,
+      message: "Page not found",
+    });
+  }
+
+  const page = rows[0];
+
+  let parsedContent = page.content;
+
+  try {
+    if (typeof parsedContent === "string") {
+      parsedContent = JSON.parse(parsedContent);
+    }
+  } catch (err) {
+    parsedContent = {};
+  }
+
+  return res.status(200).json({
+    success: true,
+    data: {
+      ...page,
+      content: parsedContent,
+    },
+  });
+});
+
+
+export const getAllPages = asyncHandler(async (req, res) => {
+  const [rows] = await pool.query(
+    "SELECT id, title, slug, status, created_at FROM pages ORDER BY id DESC"
+  );
+
+  res.status(200).json({
+    success: true,
+    data: rows,
+  });
+});
+
+export const updatePage = asyncHandler(async (req, res) => {
+  const { id } = req.params;
+  const { title, subtitle, content, status } = req.body;
+
+  const formattedSlug = title.trim().toLowerCase().replace(/\s+/g, "-");
+
+  const [result] = await pool.query(
+    `UPDATE pages
+     SET title = ?, subtitle = ?, slug = ?, content = ?, status = ?
+     WHERE id = ?`,
+    [
+      title,
+      subtitle || null,
+      formattedSlug,
+      JSON.stringify(content),
+      status,
+      id,
+    ]
+  );
+
+  return res.status(200).json({
+    success: true,
+    message: "Page updated successfully",
+  });
+});
+
+export const deletePage = asyncHandler(async (req, res) => {
+  const { id } = req.params;
+
+  await pool.query("DELETE FROM pages WHERE id = ?", [id]);
+
+  res.status(200).json({
+    success: true,
+    message: "Page deleted successfully",
   });
 });

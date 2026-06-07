@@ -7,7 +7,8 @@ import {
   upsertFooter, getFooter, upsertHomeSection, getHomeSection,
   updateBanner, getBanner,
   getPolicies, upsertPolicy, deletePolicy, getPolicy, getAdmins, updateAdmin, deleteAdmin, updateAdminStatus, updateAdminPermissions, getAdminPermissions,upsertBookingTerms,
-  getBookingTerms
+  getBookingTerms,
+  createPage, getAllPages, getPageBySlug, updatePage, deletePage
 } from "../controllers/admin.controller.js";
 import { verifyUser } from "../../../middleware/auth.middleware.js";
 import { authorizeRoles } from "../../../middleware/role.middleware.js";
@@ -61,5 +62,15 @@ router.post(
   "/booking-terms",
   upsertBookingTerms
 );
+
+router.post("/createpage", ...adminOnly, createPage);
+
+router.get("/pages", getAllPages);
+
+router.get("/pages/:slug", getPageBySlug);
+
+router.put("/pages/:id", ...adminOnly, updatePage);
+
+router.delete("/pages/:id", ...adminOnly, deletePage);
 
 export default router;

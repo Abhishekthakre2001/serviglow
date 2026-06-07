@@ -10,6 +10,8 @@ import BannerContent from "@/components/ui/Banner";
 import PoliciesManager from "@/components/ui/Policies";
 import Announcement from "@/components/ui/Announcement";
 import DymanicPriceing from "@/components/ui/DymanicPriceing";
+import BookingTerms from "@/components/ui/BookingTerms";
+import PagesCMS from "@/components/ui/PagesCMS";
 
 
 /* ================= TABS ================= */
@@ -20,6 +22,8 @@ const TABS = [
   { key: "policies", label: "Policies" },
   { key: "announcement", label: "Announcement" },
   { key: "priceing", label: "Priceing" },
+  { key: "Bookingt&c", label: "Booking T&c " },
+  { key: "Pages", label: "Pages" },
 ];
 const isValidURL = (url) => {
   if (!url) return false;
@@ -493,14 +497,15 @@ export default function Content() {
             )}
 
             {activeTab === "priceing" && (
-              // loading && !contentData?.footer ? (
-              //   <div className="text-center py-10 text-gray-400">
-              //     Loading footer...
-              //   </div>
-              // ) : (
-              //   <DymanicPriceing />
-              // )
               <DymanicPriceing />
+            )}
+
+            {activeTab === "Bookingt&c" && (
+              <BookingTerms />
+            )}
+
+            {activeTab === "Pages" && (
+              <PagesCMS />
             )}
 
           </div>

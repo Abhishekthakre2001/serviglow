@@ -100,6 +100,7 @@ export default function Master() {
     const initialForm = {
         firstName: "",
         lastName: "",
+        designation: "",
         email: "",
         phone: "",
         password: "",
@@ -179,6 +180,7 @@ export default function Master() {
         setFormData({
             firstName: row.first_name || "",
             lastName: row.last_name || "",
+            designation: row.designation || "",
             email: row.email || "",
             phone: row.phone || "",
             password: "",
@@ -455,6 +457,7 @@ export default function Master() {
             if (
                 !formData.firstName ||
                 !formData.lastName ||
+                !formData.designation ||
                 !formData.email ||
                 !formData.phone
             ) {
@@ -656,24 +659,10 @@ export default function Master() {
             key: "phone",
         },
 
-        // {
-        //     label: "Status",
-        //     key: "status",
-        //     render: (value, row) => (
-        //         <button
-        //             onClick={() => handleStatusToggle(row)}
-        //             className={`px-3 py-1 rounded-full text-xs font-semibold ${value === "active"
-        //                 ? "bg-green-100 text-green-700"
-        //                 : "bg-red-100 text-red-700"
-        //                 }`}
-        //         >
-        //             {value === "active"
-        //                 ? "Active"
-        //                 : "Inactive"}
-        //         </button>
-        //     ),
-        // },
-
+        {
+            label: "Designation",
+            key: "designation",
+        },
         {
             label: "Permissions",
             key: "permissions",
@@ -759,6 +748,15 @@ export default function Master() {
                                 label="Last Name"
                                 name="lastName"
                                 value={formData.lastName}
+                                onChange={handleChange}
+                                required
+                                submitAttempted={submitAttempted}
+                            />
+
+                            <InputField
+                                label="Designation"
+                                name="designation"
+                                value={formData.designation}
                                 onChange={handleChange}
                                 required
                                 submitAttempted={submitAttempted}

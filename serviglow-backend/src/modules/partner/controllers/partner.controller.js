@@ -18,7 +18,9 @@ export const registerPartner = asyncHandler(async (req, res) => {
   try {
     const {
       firstName, lastName, email, password, phone,
-      businessName, categoryId, subCategoryId,
+      businessName, businessAddress,
+      city,
+      state, categoryId, subCategoryId,
       yearsOfExperience, serviceAreas, about,
     } = req.body;
 
@@ -73,18 +75,33 @@ export const registerPartner = asyncHandler(async (req, res) => {
     // ── Create partner profile ──
     await conn.query(
       `INSERT INTO partner_profiles
-        (user_id, business_name, category_id, sub_category_id, years_of_experience,
-         service_areas, logo, doc_business_license, doc_certificate, doc_insurance,
-         about, approval_status)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending')`,
+    (user_id, business_name, business_address, city, state, category_id, sub_category_id, years_of_experience,
+     service_areas, logo, doc_business_license, doc_certificate, doc_insurance,
+     doc_tax_id, doc_corporation_cert, doc_gov_id,
+     about, approval_status)
+   VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending')`,
       [
-        userId, businessName.trim(), categoryId, subCategoryId,
+        userId,
+        businessName.trim(),
+        businessAddress,
+        city,
+        state,
+        categoryId,
+        subCategoryId,
         Number(yearsOfExperience),
         JSON.stringify(Array.isArray(areas) ? areas : [areas]),
+
+        // existing files
         req.files?.logo?.[0]?.path || null,
         req.files?.businessLicense?.[0]?.path || null,
         req.files?.certificate?.[0]?.path || null,
         req.files?.insurance?.[0]?.path || null,
+
+        // new files
+        req.files?.taxid?.[0]?.path || null,
+        req.files?.corporationcert?.[0]?.path || null,
+        req.files?.govId?.[0]?.path || null,
+
         about || null,
       ]
     );
@@ -315,7 +332,9 @@ export const updatePartnerProfile = asyncHandler(async (req, res) => {
     const {
       firstName, lastName, email, phone,
       businessName, categoryId, subCategoryId,
-      yearsOfExperience, serviceAreas, about, isAvailable,
+      yearsOfExperience, serviceAreas, about, isAvailable, businessAddress,
+      city,
+      state,
     } = req.body;
 
     // ── Fetch existing records ──
@@ -369,6 +388,10 @@ export const updatePartnerProfile = asyncHandler(async (req, res) => {
     if (yearsOfExperience !== undefined) ppUpdates.years_of_experience = Number(yearsOfExperience);
     if (about !== undefined) ppUpdates.about = about;
 
+    if (businessAddress !== undefined) ppUpdates.business_address = businessAddress.trim();
+    if (city !== undefined) ppUpdates.city = city.trim();
+    if (state !== undefined) ppUpdates.state = state.trim();
+
     if (isAvailable !== undefined) {
       if (typeof isAvailable === "boolean") {
         ppUpdates.is_available = isAvailable;
@@ -416,6 +439,21 @@ export const updatePartnerProfile = asyncHandler(async (req, res) => {
       if (req.files.logo?.[0]) {
         deleteFile(partner.logo);
         ppUpdates.logo = req.files.logo[0].path;
+      }
+
+      if (req.files.taxid?.[0]) {
+        deleteFile(partner.doc_tax_id);
+        ppUpdates.doc_tax_id = req.files.taxid[0].path;
+      }
+
+      if (req.files.corporationcert?.[0]) {
+        deleteFile(partner.doc_corporation_cert);
+        ppUpdates.doc_corporation_cert = req.files.corporationcert[0].path;
+      }
+
+      if (req.files.govId?.[0]) {
+        deleteFile(partner.doc_gov_id);
+        ppUpdates.doc_gov_id = req.files.govId[0].path;
       }
     }
 

@@ -12,7 +12,10 @@ import {
 
 import serviceApi from "@/services/serviceApi";
 
-export default function PremiumHero() {
+export default function PremiumHero({
+  zipCode,
+  setZipCode,
+}) {
 
   const router = useRouter();
 
@@ -159,6 +162,16 @@ export default function PremiumHero() {
                 </p>
 
               )}
+
+              <div className="mt-8 w-full max-w-md">
+                <input
+                  type="text"
+                  value={zipCode}
+                  onChange={(e) => setZipCode(e.target.value)}
+                  placeholder="Search services by ZIP Code"
+                  className="w-full rounded-full border border-white/20 bg-white/10 backdrop-blur-xl px-6 py-4 text-white placeholder:text-gray-300 outline-none focus:border-blue-400"
+                />
+              </div>
 
               {/* BUTTONS */}
               <div className="mt-10 flex flex-wrap justify-center gap-5">

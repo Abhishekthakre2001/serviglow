@@ -78,6 +78,9 @@ export default function PartnerRegistration() {
     confirm_password: "",
 
     business_name: "",
+    business_address: "",
+    city: "",
+    state: "",
     service_category: "",
     service_subcategory: "",
     experience: "",
@@ -98,6 +101,9 @@ export default function PartnerRegistration() {
     certification: null,
     insurance: null,
     logo: null,
+    taxid: null,
+    corporationcert: null,
+    govId: null,
     about: "",
     agree: false,
   });
@@ -117,6 +123,10 @@ export default function PartnerRegistration() {
   const validateEmail = (email) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     return emailRegex.test(email);
+  };
+
+  const validateCityState = (value) => {
+    return /^[A-Za-z\s]+$/.test(value.trim());
   };
 
   const validatePhone = (phone) => {
@@ -175,6 +185,9 @@ export default function PartnerRegistration() {
   const isStep2Valid = () => {
     return (
       form.business_name.trim() &&
+      form.business_address.trim() &&
+      validateCityState(form.city) &&
+      validateCityState(form.state) &&
       form.service_category &&
       form.service_subcategory &&
       form.experience.trim() &&
@@ -276,6 +289,10 @@ export default function PartnerRegistration() {
       formData.append("serviceAreas", form.zip_codes);
       formData.append("about", form.about);
 
+      formData.append("businessAddress", form.business_address);
+      formData.append("city", form.city);
+      formData.append("state", form.state);
+
       // Add documents (exact names expected by Multer)
       if (form.business_license) {
         formData.append("businessLicense", form.business_license);
@@ -288,6 +305,16 @@ export default function PartnerRegistration() {
       }
       if (form.logo) {
         formData.append("logo", form.logo);
+      }
+
+      if (form.taxid) {
+        formData.append("taxid", form.taxid);
+      }
+      if (form.corporationcert) {
+        formData.append("corporationcert", form.corporationcert);
+      }
+      if (form.govId) {
+        formData.append("govId", form.govId);
       }
 
       // Call API via useAuth hook
@@ -682,6 +709,45 @@ export default function PartnerRegistration() {
                 required
               />
 
+              <InputField
+                label="Business Address"
+                name="business_address"
+                value={form.business_address}
+                onChange={handleChange}
+                placeholder="Enter business address"
+                required
+              />
+
+              <InputField
+                label="City"
+                name="city"
+                value={form.city}
+                onChange={handleChange}
+                placeholder="Enter city"
+                required
+              />
+
+              {form.city && !validateCityState(form.city) && (
+                <p className="text-red-500 text-sm flex items-center gap-1">
+                  <AlertCircle size={14} /> City must contain only letters
+                </p>
+              )}
+
+              <InputField
+                label="State"
+                name="state"
+                value={form.state}
+                onChange={handleChange}
+                placeholder="Enter state"
+                required
+              />
+
+              {form.state && !validateCityState(form.state) && (
+                <p className="text-red-500 text-sm flex items-center gap-1">
+                  <AlertCircle size={14} /> State must contain only letters
+                </p>
+              )}
+
               {/* Categories Dropdown with Loading State */}
               <div>
                 <Dropdown
@@ -774,7 +840,7 @@ export default function PartnerRegistration() {
                 onChange={(e) =>
                   handleDocumentUpload("certification", e.target.files?.[0])
                 }
-                accept="image/*,.pdf"
+                accept=".pdf"
               // required
               />
               {/* {!form.certification && (
@@ -790,7 +856,7 @@ export default function PartnerRegistration() {
                 onChange={(e) =>
                   handleDocumentUpload("insurance", e.target.files?.[0])
                 }
-                accept="image/*,.pdf"
+                accept="application/pdf"
               // required
               />
               {/* {!form.insurance && (
@@ -806,8 +872,40 @@ export default function PartnerRegistration() {
                 onChange={(e) =>
                   handleDocumentUpload("logo", e.target.files?.[0])
                 }
-                accept="image/*,.pdf"
+                accept="application/pdf"
               />
+
+              <FileUpload
+                label="Government ID (Optional)"
+                name="logo"
+                files={form.govId ? [form.govId] : []}
+                onChange={(e) =>
+                  handleDocumentUpload("govId", e.target.files?.[0])
+                }
+                accept="application/pdf"
+              />
+
+              <FileUpload
+                label="LLC/corporation Doc. (Optional)"
+                name="logo"
+                files={form.corporationcert ? [form.corporationcert] : []}
+                onChange={(e) =>
+                  handleDocumentUpload("corporationcert", e.target.files?.[0])
+                }
+                accept="application/pdf"
+              />
+
+              <FileUpload
+                label="EIN or Tax ID  (Optional)"
+                name="logo"
+                files={form.taxid ? [form.taxid] : []}
+                onChange={(e) =>
+                  handleDocumentUpload("taxid", e.target.files?.[0])
+                }
+                accept="application/pdf"
+              />
+
+
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">

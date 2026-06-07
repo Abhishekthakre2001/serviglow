@@ -17,6 +17,9 @@ const uploadFields = upload.fields([
     { name: "certificate", maxCount: 1 },
     { name: "insurance", maxCount: 1 },
     { name: "logo", maxCount: 1 },
+    { name: "taxid", maxCount: 1 },
+    { name: "corporationcert", maxCount: 1 },
+    { name: "govId", maxCount: 1 },
 ]);
 
 router.post("/register", uploadFields, registerPartner);

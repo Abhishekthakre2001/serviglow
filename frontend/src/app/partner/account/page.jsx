@@ -67,7 +67,14 @@ export default function PartnerProfilePage() {
     business_license: null,
     certificate: null,
     insurance: null,
+    tax_id: null,
+    corporation_cert: null,
+    gov_id: null,
     isAvailable: false,
+    business_address: "",
+    city: "",
+    state: "",
+    country: "",
   });
 
   useEffect(() => {
@@ -93,6 +100,13 @@ export default function PartnerProfilePage() {
         about: data?.about || "",
         zip_codes: data?.service_areas?.join(", ") || "",
         isAvailable: data?.is_available,
+
+        // ✅ ADD THESE
+        business_address: data?.business_address || "",
+        city: data?.city || "",
+        state: data?.state || "",
+        country: data?.country || "",
+
         business_license: null,
         certificate: null,
         insurance: null,
@@ -134,7 +148,11 @@ export default function PartnerProfilePage() {
       form.zip_codes !== (originalProfile.serviceAreas?.join(", ") || "") ||
       !!form.business_license ||
       !!form.certificate ||
-      !!form.insurance
+      !!form.insurance ||
+      form.business_address !== (originalProfile.business_address || "") ||
+      form.city !== (originalProfile.city || "") ||
+      form.state !== (originalProfile.state || "") ||
+      form.country !== (originalProfile.country || "")
     );
   };
 
@@ -298,6 +316,8 @@ export default function PartnerProfilePage() {
     const validationErrors = validateForm();
     setErrors(validationErrors);
 
+
+
     // ✅ Stop if errors exist
     if (Object.keys(validationErrors).length > 0) {
       return setConfirmation({
@@ -335,6 +355,10 @@ export default function PartnerProfilePage() {
       formData.append("yearsOfExperience", form.experience);
       formData.append("about", form.about);
       formData.append("isAvailable", form.isAvailable);
+      formData.append("businessAddress", form.business_address);
+      formData.append("city", form.city);
+      formData.append("state", form.state);
+      formData.append("country", form.country);
 
       formData.append(
         "serviceAreas",
@@ -354,6 +378,17 @@ export default function PartnerProfilePage() {
       }
       if (form.insurance) {
         formData.append("insurance", form.insurance);
+      }
+      if (form.tax_id) {
+        formData.append("taxid", form.tax_id);
+      }
+
+      if (form.corporation_cert) {
+        formData.append("corporationcert", form.corporation_cert);
+      }
+
+      if (form.gov_id) {
+        formData.append("govId", form.gov_id);
       }
 
       const res = await updatePartnerProfile(formData);
@@ -609,6 +644,23 @@ export default function PartnerProfilePage() {
                       </p>
                     </div>
 
+                    <div className="rounded-xl border border-slate-200 bg-white p-4 sm:col-span-2">
+                      <div className="mb-2 flex items-center gap-2 text-slate-500">
+                        <MapPin className="h-4 w-4" />
+                        <span className="text-xs font-semibold uppercase tracking-wide">
+                          Business Address
+                        </span>
+                      </div>
+
+                      <p className="text-sm font-medium text-slate-900">
+                        {profile?.business_address || "-"}
+                      </p>
+
+                      <p className="text-xs text-slate-500 mt-1">
+                        {profile?.city} {profile?.state}
+                      </p>
+                    </div>
+
                     <div className="rounded-2xl border border-slate-200 bg-slate-50/70 p-4">
                       <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-xl bg-violet-100 text-violet-700">
                         <MapPin className="h-5 w-5" />
@@ -767,32 +819,61 @@ export default function PartnerProfilePage() {
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                      {/* {profile?.doc_business_license && (
-                        <img
-                          src={getFileUrl(profile.doc_business_license)}
-                          className="w-full h-48 object-cover rounded-xl border shadow"
-                          alt="Business License"
-                        />
+
+                      {profile?.doc_business_license && (
+                        <div className="space-y-2">
+                          <p className="text-xs font-semibold text-slate-600">
+                            Business License
+                          </p>
+                          {renderFile(profile.doc_business_license)}
+                        </div>
                       )}
 
                       {profile?.doc_certificate && (
-                        <img
-                          src={getFileUrl(profile.doc_certificate)}
-                          className="w-full h-48 object-cover rounded-xl border shadow"
-                          alt="Certificate"
-                        />
+                        <div className="space-y-2">
+                          <p className="text-xs font-semibold text-slate-600">
+                            Certificate
+                          </p>
+                          {renderFile(profile.doc_certificate)}
+                        </div>
                       )}
 
                       {profile?.doc_insurance && (
-                        <img
-                          src={getFileUrl(profile.doc_insurance)}
-                          className="w-full h-48 object-cover rounded-xl border shadow"
-                          alt="Insurance"
-                        />
-                      )} */}
-                      {profile?.doc_business_license && renderFile(profile.doc_business_license)}
-                      {profile?.doc_certificate && renderFile(profile.doc_certificate)}
-                      {profile?.doc_insurance && renderFile(profile.doc_insurance)}
+                        <div className="space-y-2">
+                          <p className="text-xs font-semibold text-slate-600">
+                            Insurance
+                          </p>
+                          {renderFile(profile.doc_insurance)}
+                        </div>
+                      )}
+
+                      {profile?.doc_tax_id && (
+                        <div className="space-y-2">
+                          <p className="text-xs font-semibold text-slate-600">
+                            Tax ID
+                          </p>
+                          {renderFile(profile.doc_tax_id)}
+                        </div>
+                      )}
+
+                      {profile?.doc_corporation_cert && (
+                        <div className="space-y-2">
+                          <p className="text-xs font-semibold text-slate-600">
+                            Corporation Certificate
+                          </p>
+                          {renderFile(profile.doc_corporation_cert)}
+                        </div>
+                      )}
+
+                      {profile?.doc_gov_id && (
+                        <div className="space-y-2">
+                          <p className="text-xs font-semibold text-slate-600">
+                            Government ID
+                          </p>
+                          {renderFile(profile.doc_gov_id)}
+                        </div>
+                      )}
+
                     </div>
 
                     {!profile?.doc_business_license &&
@@ -862,6 +943,31 @@ export default function PartnerProfilePage() {
                 pattern={/^[A-Za-z0-9\s&.,'-]+$/}
                 error={errors.business_name}
               />
+
+              <InputField
+                name="business_address"
+                label="Business Address"
+                value={form.business_address}
+                onChange={handleChange}
+                error={errors.business_address}
+              />
+
+              <InputField
+                name="city"
+                label="City"
+                value={form.city}
+                onChange={handleChange}
+                error={errors.city}
+              />
+
+              <InputField
+                name="state"
+                label="State"
+                value={form.state}
+                onChange={handleChange}
+                error={errors.state}
+              />
+
               <InputField
                 name="experience"
                 label="Experience"
@@ -988,7 +1094,14 @@ export default function PartnerProfilePage() {
             </div>
 
             <div className="grid md:grid-cols-3 gap-4">
-              {["business_license", "certificate", "insurance"].map((field) => (
+              {[
+                "business_license",
+                "certificate",
+                "insurance",
+                "tax_id",
+                "corporation_cert",
+                "gov_id",
+              ].map((field) => (
                 <div key={field} className="space-y-2">
                   <label className="block text-sm font-medium text-gray-700 capitalize">
                     {field.replace(/_/g, " ")}

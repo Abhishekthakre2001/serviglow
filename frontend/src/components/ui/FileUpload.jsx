@@ -198,6 +198,7 @@ export default function FileUpload({
         type="file"
         hidden
         multiple={multiple}
+        accept=".pdf,application/pdf"
         onChange={(e) => handleFiles(e.target.files)}
       />
     </div>
