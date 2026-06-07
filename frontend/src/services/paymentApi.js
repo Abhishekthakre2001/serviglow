@@ -54,6 +54,11 @@ const paymentApi = {
 
   getMySubscription: () =>
     axiosInstance.get("/payment/mysubscription"),
+
+  refundSubscription: (subscriptionId) =>
+    axiosInstance.post(
+      `/payment/subscription/${subscriptionId}/refund`
+    ),
 };
 
 export default paymentApi;

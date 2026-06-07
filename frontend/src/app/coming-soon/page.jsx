@@ -1,3 +1,5 @@
+"use client";
+
 export default function ComingSoon() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-200  to-orange-200 px-6">

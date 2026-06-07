@@ -10,7 +10,6 @@ import {
   getPlanDetailsByKey,
   migrateSubscriptionPlan,
   refundSubscription,
-  getAllRefunds
 } from "../controllers/payment.controller.js";
 import { verifyUser } from "../../../middleware/auth.middleware.js";
 import { authorizeRoles } from "../../../middleware/role.middleware.js";
@@ -44,17 +43,16 @@ router.patch(
 // {
 //   "amount": 29
 // }
+router.post(
+  "/subscription/:subscriptionId/migrate",
+  migrateSubscriptionPlan
+);
 
 
 // create new paypal plans insead of the update price 
 router.post(
   "/paypal/plan/:planKey/new-price",
   createNewPlanPrice
-);
-
-router.post(
-  "/subscription/:subscriptionId/migrate",
-  migrateSubscriptionPlan
 );
 
 // ---- Subscription APIs ----
@@ -101,10 +99,6 @@ router.post(
   refundSubscription
 );
 
-// refund list
-router.get(
-  "/refunds",
-  getAllRefunds
-);
+
 
 export default router;

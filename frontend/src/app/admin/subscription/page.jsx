@@ -6,6 +6,7 @@ import AdminGuard from "@/app/admin/AdminGuard";
 import Tabs from "@/components/ui/Tabs";
 import DataTable from "@/components/ui/DataTable";
 import paymentApi from "@/services/paymentApi";
+import Conformation from "@/components/ui/Conformation";
 
 /* ================= STATUS BADGE ================= */
 const StatusBadge = ({ status }) => {
@@ -41,6 +42,21 @@ export default function SubscriptionsPage() {
     const [startDate, setStartDate] = useState("");
     const [endDate, setEndDate] = useState("");
 
+    const [refundedSubs, setRefundedSubs] = useState([]);
+    const [loadingRefunded, setLoadingRefunded] = useState(false);
+
+    const [cancelLoadingId, setCancelLoadingId] =
+        useState(null);
+
+    const [refundLoadingId, setRefundLoadingId] =
+        useState(null);
+
+    const [confirmation, setConfirmation] = useState({
+        open: false,
+        type: "success",
+        message: "",
+    });
+
     /* ================= TABLE COLUMNS ================= */
     const columns = [
         { key: "name", label: "Name" },
@@ -68,19 +84,122 @@ export default function SubscriptionsPage() {
             label: "Created",
             render: (value) => (value ? new Date(value).toLocaleDateString('en-GB') : "-"),
         },
+        {
+            key: "refundStatus",
+            label: "Refund",
+            render: (value) =>
+                value === 1 ? (
+                    <span className="px-2 py-1 bg-green-100 text-green-700 rounded">
+                        Refunded
+                    </span>
+                ) : (
+                    <span className="px-2 py-1 bg-gray-100 text-gray-700 rounded">
+                        Not Refunded
+                    </span>
+                ),
+        },
+        {
+            key: "actions",
+            label: "Actions",
+            render: (_, row) => (
+                <div className="flex gap-2">
+
+                    {row.status === "ACTIVE" && (
+                        <button
+                            onClick={() =>
+                                handleCancelSubscription(row)
+                            }
+                            disabled={
+                                cancelLoadingId === row.id ||
+                                refundLoadingId === row.id
+                            }
+                            className="px-3 py-1 bg-red-600 text-white rounded text-sm disabled:opacity-50"
+                        >
+                            {cancelLoadingId === row.id
+                                ? "Cancelling..."
+                                : "Cancel"}
+                        </button>
+                    )}
+
+                    {row.refundStatus !== 1 && (
+                        <button
+                            onClick={() =>
+                                handleRefundSubscription(row)
+                            }
+                            disabled={
+                                refundLoadingId === row.id ||
+                                cancelLoadingId === row.id
+                            }
+                            className="px-3 py-1 bg-orange-600 text-white rounded text-sm disabled:opacity-50"
+                        >
+                            {refundLoadingId === row.id
+                                ? "Refunding..."
+                                : "Refund"}
+                        </button>
+                    )}
+
+                    {row.refundStatus === 1 && (
+                        <span className="px-3 py-1 bg-green-100 text-green-700 rounded text-sm">
+                            Refunded
+                        </span>
+                    )}
+                </div>
+            ),
+        }
+    ];
+
+    const refundColumns = [
+        { key: "name", label: "Name" },
+        { key: "email", label: "Email" },
+        { key: "planKey", label: "Plan" },
+        { key: "price", label: "Price ($)" },
+        {
+            key: "refundAmount",
+            label: "Refund Amount",
+        },
+        {
+            key: "refundDate",
+            label: "Refund Date",
+            render: (value) =>
+                value
+                    ? new Date(value).toLocaleDateString("en-GB")
+                    : "-",
+        },
+        {
+            key: "paypalRefundId",
+            label: "Refund ID",
+        },
+        {
+            key: "status",
+            label: "Subscription Status",
+            render: (value) => (
+                <StatusBadge status={value} />
+            ),
+        },
     ];
 
     /* ================= FORMAT ROWS ================= */
     const formatRows = (arr) =>
         (arr || []).map((s) => ({
             id: s.id,
-            name:
-                s?.name ||
-                `${s?.userId?.firstName || ""} ${s?.userId?.lastName || ""}`.trim() ||
-                "-",
-            email: s?.email || s?.userId?.email || "-",
+            name: s?.name || "-",
+            email: s?.email || "-",
             planKey: s?.plan_key || "-",
-            paypalSubscriptionId: s?.paypal_subscription_id || "-",
+            paypalSubscriptionId:
+                s?.paypal_subscription_id || "-",
+
+            refundStatus:
+                Number(s?.refund_status || 0),
+
+            refundAmount:
+                s?.refund_amount || "0.00",
+
+            refundDate:
+                s?.refund_date || null,
+
+            paypalRefundId:
+                s?.paypal_refund_id || "-",
+
             price: s?.price || "-",
             startDate: s?.start_date || null,
             endDate: s?.end_date || null,
@@ -131,6 +250,42 @@ export default function SubscriptionsPage() {
     //     };
     // }, []);
 
+    const handleCancelSubscription = async (row) => {
+        try {
+            const confirmCancel = window.confirm(
+                "Are you sure you want to cancel this subscription?"
+            );
+
+            if (!confirmCancel) return;
+
+            setCancelLoadingId(row.id);
+
+            await paymentApi.cancelSubscription(
+                row.raw.paypal_subscription_id
+            );
+
+            setConfirmation({
+                open: true,
+                type: "success",
+                message:
+                    "Subscription cancelled successfully",
+            });
+
+            await fetchSubscriptions();
+        } catch (error) {
+            console.error(error);
+
+            setConfirmation({
+                open: true,
+                type: "error",
+                message:
+                    error?.response?.data?.message ||
+                    "Failed to cancel subscription",
+            });
+        } finally {
+            setCancelLoadingId(null);
+        }
+    };
 
     const fetchSubscriptions = async () => {
         try {
@@ -178,12 +333,18 @@ export default function SubscriptionsPage() {
                     endDate
                 ),
             ]);
+            const allData = formatRows(allRes?.data?.data || []);
 
             setAllSubs(formatRows(allRes?.data?.data || []));
             setActiveSubs(formatRows(activeRes?.data?.data || []));
             setPendingSubs(formatRows(pendingRes?.data?.data || []));
             setCancelSubs(formatRows(cancelledRes?.data?.data || []));
             setExpiredSubs(formatRows(expiredRes?.data?.data || []));
+            setRefundedSubs(
+                allData.filter(
+                    (item) => Number(item.refundStatus) === 1
+                )
+            );
         } catch (err) {
             console.error(err);
         } finally {
@@ -195,36 +356,45 @@ export default function SubscriptionsPage() {
         fetchSubscriptions();
     }, []);
 
-    /* ================= OPTIONAL: REFRESH ONE TAB ================= */
-    const refreshTab = async (status) => {
+    const handleRefundSubscription = async (row) => {
         try {
-            if (!status) setLoadingAll(true);
-            if (status === "ACTIVE") setLoadingActive(true);
-            if (status === "PENDING") setLoadingPending(true);
-            if (status === "EXPIRED") setLoadingExpired(true);
-            if (status === "CANCELLED") setLoadingCancel(true);
+            const confirmRefund = window.confirm(
+                "Are you sure you want to refund this subscription?"
+            );
 
-            const res = status
-                ? await paymentApi.getSubscriptionsByStatus(status)
-                : await paymentApi.getSubscriptions();
+            if (!confirmRefund) return;
 
-            const rows = formatRows(res?.data?.data || []);
+            setRefundLoadingId(row.id);
 
-            if (!status) setAllSubs(rows);
-            if (status === "ACTIVE") setActiveSubs(rows);
-            if (status === "PENDING") setPendingSubs(rows);
-            if (status === "EXPIRED") setExpiredSubs(rows);
-            if (status === "CANCELLED") setCancelSubs(rows);
-        } catch (err) {
-            console.error("Refresh subscriptions error:", err);
+            const res =
+                await paymentApi.refundSubscription(
+                    row.paypalSubscriptionId
+                );
+
+            setConfirmation({
+                open: true,
+                type: "success",
+                message:
+                    res?.data?.message ||
+                    "Refund processed successfully",
+            });
+
+            await fetchSubscriptions();
+        } catch (error) {
+            console.error(error);
+
+            setConfirmation({
+                open: true,
+                type: "error",
+                message:
+                    error?.response?.data?.message ||
+                    "Refund failed",
+            });
         } finally {
-            if (!status) setLoadingAll(false);
-            if (status === "ACTIVE") setLoadingActive(false);
-            if (status === "PENDING") setLoadingPending(false);
-            if (status === "EXPIRED") setLoadingExpired(false);
-            if (status === "CANCELLED") setLoadingCancel(false);
+            setRefundLoadingId(null);
         }
     };
+
 
     /* ================= TABS ================= */
     const tabs = [
@@ -303,11 +473,33 @@ export default function SubscriptionsPage() {
                 </div>
             ),
         },
+        {
+            label: "Refunded",
+            content: (
+                <div className="w-full overflow-x-auto">
+                    <DataTable
+                        title="Refunded Subscriptions"
+                        columns={refundColumns}
+                        data={refundedSubs}
+                        loading={loadingRefunded}
+                        showActions={false}
+                    />
+                </div>
+            ),
+        },
     ];
 
     return (
         <AdminGuard>
             <AdminLayout>
+                <Conformation
+                    open={confirmation.open}
+                    type={confirmation.type}
+                    message={confirmation.message}
+                    onClose={() =>
+                        setConfirmation((prev) => ({ ...prev, open: false }))
+                    }
+                />
                 <div className="max-full w-full mx-auto">
                     <div className="flex flex-wrap items-end gap-4 mb-5">
                         <div>

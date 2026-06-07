@@ -515,22 +515,30 @@ export const refundSubscription = async (
   try {
     const { subscriptionId } = req.params;
 
-    // Get subscription from DB
     const subscription =
       await Subscription.findByPaypalSubscriptionId(
         subscriptionId
       );
 
+    // Subscription not found in DB
     if (!subscription) {
       return res.status(404).json({
         success: false,
+        code: "SUBSCRIPTION_NOT_FOUND",
         message: "Subscription not found",
       });
     }
 
-    const partnerId = subscription.user_id;
+    // Already refunded in DB
+    if (Number(subscription.refund_status) === 1) {
+      return res.status(400).json({
+        success: false,
+        code: "ALREADY_REFUNDED",
+        message:
+          "This subscription has already been refunded",
+      });
+    }
 
-    // Get transactions
     const startDate = new Date();
     startDate.setMonth(
       startDate.getMonth() - 1
@@ -544,84 +552,113 @@ export const refundSubscription = async (
     const transaction =
       transactions?.transactions?.[0];
 
+    // No payment found
     if (!transaction?.id) {
       return res.status(404).json({
         success: false,
-        message: "Transaction not found",
+        code: "PAYMENT_NOT_FOUND",
+        message:
+          "No payment transaction found for this subscription",
       });
     }
 
     const captureId = transaction.id;
 
-    // Check if already refunded
-    // const existingRefund =
-    //   await Subscription.findRefundByCaptureId(
-    //     captureId
-    //   );
+    let refund;
 
-    // if (existingRefund) {
-    //   return res.status(400).json({
-    //     success: false,
-    //     message:
-    //       "This payment has already been refunded",
-    //   });
-    // }
+    try {
+      refund = await paypalRequest(
+        "POST",
+        `/v2/payments/captures/${captureId}/refund`,
+        {}
+      );
+    } catch (paypalError) {
+      const paypalData =
+        paypalError?.response?.data || {};
 
-    // Refund
-    const refund = await paypalRequest(
-      "POST",
-      `/v2/payments/captures/${captureId}/refund`,
-      {}
-    );
+      const details =
+        paypalData?.details || [];
 
-    // Save refund record
-    await Subscription.createRefund({
-      partnerId,
-      paypalRefundId: refund.id,
-      paypalSubscriptionId:
-        subscriptionId,
-      paypalCaptureId: captureId,
-      amount: refund.amount?.value,
-      currency:
-        refund.amount?.currency_code,
-      status: refund.status,
-      rawResponse: refund,
+      // Already refunded on PayPal
+      const alreadyRefunded =
+        details.some(
+          (d) =>
+            d.issue ===
+            "CAPTURE_FULLY_REFUNDED"
+        );
+
+      if (alreadyRefunded) {
+        await Subscription.markAsRefunded({
+          subscriptionId,
+          refundId:
+            "PAYPAL_ALREADY_REFUNDED",
+          amount: subscription.price,
+        });
+
+        return res.status(400).json({
+          success: false,
+          code: "ALREADY_REFUNDED",
+          message:
+            "Payment has already been refunded on PayPal",
+        });
+      }
+
+      // Invalid resource / capture ID
+      const invalidResource =
+        details.some(
+          (d) =>
+            d.issue ===
+            "INVALID_RESOURCE_ID"
+        );
+
+      if (invalidResource) {
+        return res.status(404).json({
+          success: false,
+          code: "PAYMENT_NOT_FOUND",
+          message:
+            "Payment record not found on PayPal",
+        });
+      }
+
+      // PayPal validation error
+      return res.status(400).json({
+        success: false,
+        code: "PAYPAL_REFUND_FAILED",
+        message:
+          paypalData.message ||
+          "Refund could not be processed",
+        details,
+      });
+    }
+
+    await Subscription.markAsRefunded({
+      subscriptionId,
+      refundId: refund.id,
+      amount: refund.amount?.value || 0,
     });
 
     return res.status(200).json({
       success: true,
-      message: "Refund successful",
+      code: "REFUND_SUCCESS",
+      message:
+        "Subscription refunded successfully",
       data: refund,
     });
   } catch (err) {
-    console.log(
+    console.error(
       "REFUND ERROR",
-      err?.response?.data || err.message
+      err?.response?.data || err
     );
 
     return res.status(500).json({
       success: false,
+      code: "INTERNAL_SERVER_ERROR",
       message:
-        err?.response?.data || err.message,
+        "Something went wrong while processing the refund",
     });
   }
 };
 
-export const getAllRefunds = async (req, res) => {
-  try {
-    const refunds = await Subscription.getrefundlist();
-
-    return res.status(200).json({
-      success: true,
-      data: refunds,
-    });
-  } catch (err) {
-    return res.status(500).json({
-      success: false,
-      message: err.message,
-    });
-  }
-};
 
 // POST /api/v1/payment/subscription/:subscriptionId/migrate
 export const migrateSubscriptionPlan = async (req, res) => {
