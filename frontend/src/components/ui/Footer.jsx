@@ -256,7 +256,7 @@ export default function FooterContent({
               />
             </Field>
 
-            <Field label="Logo URL">
+            {/* <Field label="Logo URL">
               <Input
                 value={footer.company.logo}
                 onChange={(val) =>
@@ -267,7 +267,7 @@ export default function FooterContent({
                 }
                 placeholder="https://example.com/logo.png"
               />
-            </Field>
+            </Field> */}
 
             {/* LOGO PREVIEW */}
             {/* <div className="border rounded-lg p-4 bg-gray-50 text-center">

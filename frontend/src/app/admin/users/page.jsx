@@ -212,7 +212,7 @@ export default function Users() {
         open={confirmOpen}
         type="warning"
         title="Delete Customer"
-        message="Are you sure you want to delete this customer?"
+        message="Are you sure you want to permanently delete this customer? This action cannot be undone. All customer data, including profile information, bookings, transactions, subscriptions, and any associated records, will be permanently removed from the system."
         onClose={() => {
           setConfirmOpen(false);
           setSelectedUser(null);

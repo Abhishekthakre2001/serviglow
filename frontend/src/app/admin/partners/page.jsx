@@ -504,7 +504,7 @@ export default function Pathners() {
                       <div className="grid grid-cols-3 gap-3">
                         <span className="font-medium text-gray-500">Experience</span>
                         <span className="col-span-2">
-                          {viewPartner.raw.yearsOfExperience || 0} Years
+                          {viewPartner.raw.years_of_experience || 0} Years
                         </span>
                       </div>
 
@@ -578,7 +578,7 @@ export default function Pathners() {
                 </div>
 
                 {/* DOCUMENTS */}
-                <div className="bg-slate-50 rounded-xl p-6 border border-gray-300">
+                {/* <div className="bg-slate-50 rounded-xl p-6 border border-gray-300">
                   <h4 className="text-sm font-semibold text-slate-700 mb-4">
                     Uploaded Documents
                   </h4>
@@ -631,6 +631,81 @@ export default function Pathners() {
                           onError={(e) => { e.target.src = "/images/default_img.webp"; }}
                         />
                       </div>
+                    )}
+
+                  </div>
+                </div> */}
+                <div className="bg-slate-50 rounded-xl p-6 border border-gray-300">
+                  <h4 className="text-sm font-semibold text-slate-700 mb-4">
+                    Uploaded Documents
+                  </h4>
+
+                  <div className="flex flex-wrap gap-3">
+
+                    {viewPartner.raw.doc_business_license && (
+                      <a
+                        href={getImageUrl(viewPartner.raw.doc_business_license)}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm hover:bg-blue-700"
+                      >
+                        Business License
+                      </a>
+                    )}
+
+                    {viewPartner.raw.doc_certificate && (
+                      <a
+                        href={getImageUrl(viewPartner.raw.doc_certificate)}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm hover:bg-blue-700"
+                      >
+                        Certificate
+                      </a>
+                    )}
+
+                    {viewPartner.raw.doc_insurance && (
+                      <a
+                        href={getImageUrl(viewPartner.raw.doc_insurance)}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm hover:bg-blue-700"
+                      >
+                        Insurance
+                      </a>
+                    )}
+
+                    {viewPartner.raw.doc_tax_id && (
+                      <a
+                        href={getImageUrl(viewPartner.raw.doc_tax_id)}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm hover:bg-blue-700"
+                      >
+                        Tax ID
+                      </a>
+                    )}
+
+                    {viewPartner.raw.doc_corporation_cert && (
+                      <a
+                        href={getImageUrl(viewPartner.raw.doc_corporation_cert)}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm hover:bg-blue-700"
+                      >
+                        Corporation Certificate
+                      </a>
+                    )}
+
+                    {viewPartner.raw.doc_gov_id && (
+                      <a
+                        href={getImageUrl(viewPartner.raw.doc_gov_id)}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm hover:bg-blue-700"
+                      >
+                        Government ID
+                      </a>
                     )}
 
                   </div>

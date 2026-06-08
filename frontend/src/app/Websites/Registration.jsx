@@ -152,11 +152,10 @@ export default function RegisterSection() {
               key={plan._id || index}
               className={`relative rounded-3xl bg-white border shadow-lg p-8
               hover:shadow-2xl transition-all duration-300 hover:-translate-y-2
-              ${
-                plan.plan_key === "MODERN"
+              ${plan.plan_key === "MODERN"
                   ? "border-orange-400 scale-105"
                   : "border-gray-100"
-              }`}
+                }`}
             >
               {/* MOST POPULAR */}
               {/* {plan.plan_key === "MODERN" && (
@@ -170,13 +169,12 @@ export default function RegisterSection() {
               {/* PLAN TITLE */}
               <div
                 className={`inline-flex px-4 py-2 rounded-xl text-white font-semibold mb-6
-                ${
-                  plan.plan_key === "BASIC"
+                ${plan.plan_key === "BASIC"
                     ? "bg-gradient-to-r from-blue-500 to-blue-600"
                     : plan.plan_key === "MODERN"
-                    ? "bg-gradient-to-r from-orange-400 to-orange-500"
-                    : "bg-gradient-to-r from-purple-500 to-purple-600"
-                }`}
+                      ? "bg-gradient-to-r from-orange-400 to-orange-500"
+                      : "bg-gradient-to-r from-purple-500 to-purple-600"
+                  }`}
               >
                 {plan.plan_name}
               </div>
@@ -209,12 +207,14 @@ export default function RegisterSection() {
                     key={i}
                     className="flex items-start gap-3"
                   >
-                    <ShieldCheck
-                      size={18}
-                      className="text-green-500 mt-1"
-                    />
+                    <div className="flex-shrink-0 mt-1">
+                      <ShieldCheck
+                        size={18}
+                        className="text-green-500"
+                      />
+                    </div>
 
-                    <span className="text-gray-700 text-sm">
+                    <span className="text-gray-700 text-sm break-words">
                       {feature}
                     </span>
                   </li>

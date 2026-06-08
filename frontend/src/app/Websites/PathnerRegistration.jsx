@@ -872,7 +872,7 @@ export default function PartnerRegistration() {
                 onChange={(e) =>
                   handleDocumentUpload("logo", e.target.files?.[0])
                 }
-                accept="application/pdf"
+                accept=".jpg,.jpeg,.png,.webp"
               />
 
               <FileUpload

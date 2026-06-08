@@ -146,10 +146,13 @@ export default function Navbar() {
       )}
       {/* NAVBAR */}
       <header
+        style={{
+          top: !scrolled && announcement ? "36px" : "0px",
+        }}
         className={`fixed left-0 w-full z-40 transition-all duration-300
-        ${scrolled
-            ? "top-0 bg-white shadow-md py-3"
-            : "top-10 bg-white/80 backdrop-blur py-4"
+    ${scrolled
+            ? "bg-white shadow-md py-3"
+            : "bg-white/80 backdrop-blur py-4"
           }`}
       >
         <div className="max-w-7xl mx-auto px-6 flex items-center justify-between">
@@ -187,7 +190,7 @@ export default function Navbar() {
 
                 <Link
                   href="/pathner_registration"
-                  className={`px-5 py-2 rounded-full font-semibold transition ${isActive("/registration")
+                  className={`px-5 py-2 rounded-full font-semibold transition text-nowrap ${isActive("/registration")
                     ? "bg-gradient-to-r from-blue-600 to-orange-500 text-white"
                     : "bg-gradient-to-r from-blue-600 to-orange-500 text-white hover:shadow-lg"
                     }`}
@@ -239,9 +242,16 @@ export default function Navbar() {
         />
 
         <div
-          className={`absolute top-0 right-0 h-full w-72 bg-white shadow-2xl
-          transition-transform duration-300
-          ${open ? "translate-x-0" : "translate-x-full"}`}
+          className={`absolute right-0 bg-white shadow-2xl transition-transform duration-300
+    ${open ? "translate-x-0" : "translate-x-full"}
+  `}
+          style={{
+            top: !scrolled && announcement ? "36px" : "0",
+            height: !scrolled && announcement
+              ? "calc(100% - 36px)"
+              : "100%",
+            width: "18rem",
+          }}
         >
           <div className="flex items-center justify-between p-5 border-b border-gray-300">
             <img
@@ -336,7 +346,13 @@ export default function Navbar() {
       )}
 
       {/* SPACER */}
-      <div className={scrolled ? "h-[80px]" : "h-[120px]"} />
+      <div
+        className={`
+    ${scrolled ? "h-[76px]" : "h-[110px]"}
+    md:${scrolled ? "h-[80px]" : "h-[120px]"}
+    lg:${scrolled ? "h-[85px]" : "h-[125px]"}
+  `}
+      />
     </>
   );
 }

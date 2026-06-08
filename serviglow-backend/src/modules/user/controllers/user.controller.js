@@ -3,6 +3,7 @@ import validator from "validator";
 import pool from "../../../config/db.js";
 import { UserModel } from "../models/user.model.js";
 import { asyncHandler } from "../../../utils/asyncHandler.js";
+import { ReviewModel } from "../../reviews/models/review.model.js";
 import { generateAccessRefreshToken } from "../../../utils/generateToken.js";
 
 // ══════════════════════════════════════════════
@@ -265,28 +266,52 @@ export const updateUserProfile = asyncHandler(async (req, res) => {
 
 // delete customer
 export const deleteCustomer = asyncHandler(async (req, res) => {
-
   const customerId = req.params.id;
 
-  const user = await UserModel.findById(customerId);
+  const conn = await pool.getConnection();
 
-  if (!user) {
-    return res.status(404).json({
-      success: false,
-      message: "Customer not found",
+  try {
+    await conn.beginTransaction();
+
+    const user = await UserModel.findById(customerId);
+
+    if (!user) {
+      await conn.rollback();
+      return res.status(404).json({
+        success: false,
+        message: "Customer not found",
+      });
+    }
+
+    // delete Customer Revenue
+    await UserModel.revenuedeleteById(customerId, conn);
+
+    // Delete customer reviews
+    await UserModel.deleteById(customerId, conn);
+
+
+
+    // Delete bookings and all related records
+    await UserModel.deleteCustomerBookings(customerId, conn);
+
+    // delete Quoates
+    await UserModel.deleteCustomerQuotes(customerId, conn);
+
+    // Delete customer
+    await UserModel.delete(customerId, conn);
+
+    await conn.commit();
+
+    return res.status(200).json({
+      success: true,
+      message: "Customer deleted successfully",
     });
+  } catch (error) {
+    await conn.rollback();
+    throw error;
+  } finally {
+    conn.release();
   }
-
-  // delete related bookings
-  await UserModel.deleteCustomerBookings(customerId);
-
-  // delete user
-  await UserModel.delete(customerId);
-
-  return res.status(200).json({
-    success: true,
-    message: "Customer deleted successfully",
-  });
 });
 
 

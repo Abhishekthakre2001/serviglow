@@ -12,6 +12,7 @@ export default function FileUpload({
   multiple = false,
   maxFiles = 1,
   maxSizeMB = 5,
+   accept = ".pdf,application/pdf",
 }) {
   const inputRef = useRef();
   const [error, setError] = useState("");
@@ -198,7 +199,7 @@ export default function FileUpload({
         type="file"
         hidden
         multiple={multiple}
-        accept=".pdf,application/pdf"
+       accept={accept}
         onChange={(e) => handleFiles(e.target.files)}
       />
     </div>

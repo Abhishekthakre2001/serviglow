@@ -208,6 +208,7 @@ export default function BookingServiceForm() {
         email: user.email || "",
         address: user.addr_line1 || "",
         city: user.addr_city || "",
+        state: user.addr_state || "",
         zip: user.addr_zip || "",
       }));
     } catch (error) {

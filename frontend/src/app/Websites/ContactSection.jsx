@@ -17,7 +17,7 @@ export default function ContactQuotationSection() {
   const nameRegex = /^[A-Za-z\s]+$/; // only letters + space
   const subjectRegex = /^[A-Za-z0-9\s.,!?'-]+$/; // allow readable text
   const emailRegex = /^\S+@\S+\.\S+$/;
-const phoneRegex = /^\+?[1-9]\d{0,3}[\s.-]?\(?\d{1,4}\)?([\s.-]?\d{1,4}){1,4}$/;
+  const phoneRegex = /^\+?[1-9]\d{0,3}[\s.-]?\(?\d{1,4}\)?([\s.-]?\d{1,4}){1,4}$/;
 
 
   const [contactForm, setContactForm] = useState({
@@ -193,7 +193,7 @@ const phoneRegex = /^\+?[1-9]\d{0,3}[\s.-]?\(?\d{1,4}\)?([\s.-]?\d{1,4}){1,4}$/;
         });
       }
 
-     const phoneRegex = /^\+?[1-9]\d{0,3}[\s.-]?\(?\d{1,4}\)?([\s.-]?\d{1,4}){1,4}$/;
+      const phoneRegex = /^\+?[1-9]\d{0,3}[\s.-]?\(?\d{1,4}\)?([\s.-]?\d{1,4}){1,4}$/;
       if (!phoneRegex.test(quoteForm.phone)) {
         return setAlertConfig({
           open: true,
@@ -374,8 +374,8 @@ const phoneRegex = /^\+?[1-9]\d{0,3}[\s.-]?\(?\d{1,4}\)?([\s.-]?\d{1,4}){1,4}$/;
             {/* RIGHT FORM */}
             <div className="bg-white rounded-3xl shadow-2xl p-8">
               {/* TABS */}
-              <div className="flex bg-gray-100 rounded-full p-1 mb-8">
-                <button
+              <div className="flex  rounded-full">
+                {/* <button
                   onClick={() => setActiveTab("contact")}
                   className={`flex-1 py-3 rounded-full font-semibold transition
                   ${activeTab === "contact"
@@ -384,7 +384,7 @@ const phoneRegex = /^\+?[1-9]\d{0,3}[\s.-]?\(?\d{1,4}\)?([\s.-]?\d{1,4}){1,4}$/;
                     }`}
                 >
                   Contact Us
-                </button>
+                </button> */}
 
                 {/* <button
                   onClick={() => setActiveTab("quote")}
@@ -402,6 +402,15 @@ const phoneRegex = /^\+?[1-9]\d{0,3}[\s.-]?\(?\d{1,4}\)?([\s.-]?\d{1,4}){1,4}$/;
               {/* CONTACT FORM */}
               {activeTab === "contact" && (
                 <div className="space-y-5 animate-fadeUp">
+                  {/* Contact Form Header */}
+                  <div className="text-center">
+                    <h2 className="text-4xl md:text-5xl font-extrabold text-gray-900 leading-tight">
+
+                      <span className="block text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-orange-500">
+                        Contact Us
+                      </span>
+                    </h2>
+                  </div>
                   <div className="grid md:grid-cols-2 gap-4">
                     <input
                       value={contactForm.name}

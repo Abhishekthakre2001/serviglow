@@ -201,46 +201,79 @@ export const UserModel = {
   },
 
   // ══════════════════════════════════════════════
-// UPDATE CUSTOMER STATUS
-// ══════════════════════════════════════════════
-async updateStatus(id, status) {
+  // UPDATE CUSTOMER STATUS
+  // ══════════════════════════════════════════════
+  async updateStatus(id, status) {
 
-  await pool.query(
-    `UPDATE users
+    await pool.query(
+      `UPDATE users
      SET status = ?
      WHERE id = ?`,
-    [status, id]
-  );
-},
+      [status, id]
+    );
+  },
 
-// ══════════════════════════════════════════════
-// DELETE CUSTOMER
-// ══════════════════════════════════════════════
-async delete(id) {
+  // ══════════════════════════════════════════════
+  // DELETE CUSTOMER
+  // ══════════════════════════════════════════════
+  async delete(customerId, conn) {
+    await conn.query(
+      `DELETE FROM users WHERE id = ?`,
+      [customerId]
+    );
+  },
 
-  await pool.query(
-    `DELETE FROM users
-     WHERE id = ?`,
-    [id]
-  );
-},
+  // ══════════════════════════════════════════════
+  // DELETE CUSTOMER BOOKINGS
+  // ══════════════════════════════════════════════
+  async deleteCustomerBookings(customerId, conn) {
+    // Delete revenue records linked to customer's bookings
+    await conn.query(
+      `DELETE FROM partner_revenue
+     WHERE booking_id IN (
+       SELECT id
+       FROM bookings
+       WHERE customer_id = ?
+     )`,
+      [customerId]
+    );
 
-// ══════════════════════════════════════════════
-// DELETE CUSTOMER BOOKINGS
-// ══════════════════════════════════════════════
-async deleteCustomerBookings(customerId) {
+    // Delete bookings
+    await conn.query(
+      `DELETE FROM bookings
+     WHERE customer_id = ?`,
+      [customerId]
+    );
+  },
+  async deleteById(customerId, conn) {
+    await conn.query(
+      `DELETE FROM reviews WHERE customer_id = ?`,
+      [customerId]
+    );
+  },
 
-  await pool.query(
-    `DELETE FROM bookings
+  async revenuedeleteById(customerId) {
+
+    await pool.query(
+      `DELETE FROM partner_revenue
+     WHERE service_id  = ?`,
+      [customerId]
+    );
+  },
+
+  async deleteCustomerQuotes(customerId, conn) {
+  await conn.query(
+    `DELETE FROM quotes
      WHERE customer_id = ?`,
     [customerId]
   );
 },
 
 
-async findByRole({ role, limit, skip }) {
-  const [rows] = await pool.query(
-    `SELECT
+
+  async findByRole({ role, limit, skip }) {
+    const [rows] = await pool.query(
+      `SELECT
         id,
         first_name,
         last_name,
@@ -259,15 +292,15 @@ async findByRole({ role, limit, skip }) {
      WHERE role = ?
      ORDER BY id DESC
      LIMIT ? OFFSET ?`,
-    [role, limit, skip]
-  );
+      [role, limit, skip]
+    );
 
-  return rows;
-},
+    return rows;
+  },
 
-async findById(id) {
-  const [rows] = await pool.query(
-    `SELECT
+  async findById(id) {
+    const [rows] = await pool.query(
+      `SELECT
       id,
       first_name,
       last_name,
@@ -285,9 +318,9 @@ async findById(id) {
      FROM users
      WHERE id = ?
      LIMIT 1`,
-    [id]
-  );
+      [id]
+    );
 
-  return rows[0] || null;
-},
+    return rows[0] || null;
+  },
 };

@@ -693,6 +693,7 @@ export default function Master() {
                             onCreate={handleAdd}
                             onEdit={handleEdit}
                             onDelete={handleDelete}
+                            exportable={false}
                         />
 
                     </div>

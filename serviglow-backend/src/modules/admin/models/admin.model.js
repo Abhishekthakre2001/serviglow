@@ -206,6 +206,12 @@ export const AdminModel = {
   // },
   async getBanner() {
 
+
+    const formatCount = (count) => {
+      const num = Number(count) || 0;
+      return num > 0 ? `${num}+` : "0";
+    };
+
     // CHECK FIRST ROW
     const [bannerRows] = await pool.query(`
     SELECT * FROM banner_counters
@@ -272,7 +278,7 @@ export const AdminModel = {
         real_count: 1,
         counters: [
           {
-            number: `${customerRows[0].totalCustomers}+`,
+            number: formatCount(customerRows[0].totalCustomers),
             title: "Happy Customers",
           },
           {
@@ -280,15 +286,15 @@ export const AdminModel = {
             title: "Average Rating",
           },
           {
-            number: `${partnerRows[0].totalPartners}+`,
+            number: formatCount(partnerRows[0].totalPartners),
             title: "Approved Partners",
           },
           {
-            number: `${reviewRows[0].totalReviews}+`,
+            number: formatCount(reviewRows[0].totalReviews),
             title: "Total Reviews",
           },
           {
-            number: `${serviceRows[0].totalServices}+`,
+            number: formatCount(serviceRows[0].totalServices),
             title: "Active Services",
           },
         ],
