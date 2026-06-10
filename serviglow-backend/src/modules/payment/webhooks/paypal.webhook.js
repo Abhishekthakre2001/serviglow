@@ -180,10 +180,11 @@ export const paypalWebhookHandler = async (req, res) => {
 
         attachments: [
           {
-            name: `invoice-${subscription.paypal_subscription_id}.pdf`,
-            content: pdfBuffer.toString("base64"),
-          }
-        ],
+            filename: `invoice-${subscription.paypal_subscription_id}.pdf`,
+            content: pdfBuffer,
+            contentType: "application/pdf",
+          },
+        ]
       });
 
       console.log("✅ Activation email sent");

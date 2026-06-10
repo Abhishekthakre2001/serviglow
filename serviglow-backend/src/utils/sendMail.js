@@ -25,12 +25,17 @@
 
 import nodemailer from "nodemailer";
 
-export const sendMail = async ({ to, subject, html }) => {
+export const sendMail = async ({
+  to,
+  subject,
+  html,
+  attachments = [],
+}) => {
   try {
     const transporter = nodemailer.createTransport({
       host: process.env.SMTP_HOST,
       port: Number(process.env.SMTP_PORT),
-      secure: true, // true for 465
+      secure: true,
       auth: {
         user: process.env.SMTP_USER,
         pass: process.env.SMTP_PASS,
@@ -42,7 +47,7 @@ export const sendMail = async ({ to, subject, html }) => {
       to,
       subject,
       html,
-      attachments
+      attachments,
     });
 
     console.log("Mail sent:", info.messageId);

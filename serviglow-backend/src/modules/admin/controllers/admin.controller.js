@@ -6,7 +6,7 @@ import { asyncHandler } from "../../../utils/asyncHandler.js";
 import { generateAccessRefreshToken } from "../../../utils/generateToken.js";
 import { sendMail } from "../../../utils/sendMail.js";
 
-const loginUrl = "https://blog.deveraa.com/login";
+const loginUrl = process.env.LOGIN_URL;
 
 // ══════════════════════════════════════════════
 // REGISTER ADMIN
