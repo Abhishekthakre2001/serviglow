@@ -130,6 +130,22 @@ export default function PricingSection() {
 
   const handleSelectPlan = async (plan) => {
     try {
+
+      if (subState.type === "active") {
+
+        // Optional: allow clicking current plan without alert
+        if (activePlanKey === plan.plan_key) {
+          alert("This is your current active plan.");
+          return;
+        }
+
+        alert(
+          "You already have an active subscription. If you want to upgrade or downgrade your plan, please cancel your current subscription first."
+        );
+
+        return;
+      }
+
       const raw = localStorage.getItem("USER");
 
       if (!raw) {

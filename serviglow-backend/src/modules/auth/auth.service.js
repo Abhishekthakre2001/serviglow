@@ -41,12 +41,20 @@ export const loginService = async ({ email, password }) => {
   let latestSubscription = null;
   let freebooking = false;
 
-  // ── Check user active/inactive ──
-  if (user.status !== "active") {
+  // Customer Account delete
+  if (user.status === "softdeleted") {
     return {
       status: 403,
-      message: "Your account is inactive. Please contact admin.",
+      message: "User Not Found",
     };
+
+    // ── Check user active/inactive ──
+    if (user.status !== "active") {
+      return {
+        status: 403,
+        message: "Your account is inactive. Please contact admin.",
+      };
+    }
   }
 
   if (user.role === "partner") {

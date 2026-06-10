@@ -180,13 +180,23 @@ class Subscription {
   }
 
   static async updateByPaypalId(subscriptionId, data) {
-    const { status, subscription, startDate, endDate } = data;
+    const { status, subscription, startDate, endDate, cancelDate, cancel_date } = data;
+    const resolvedCancelDate = cancelDate ?? cancel_date ?? null;
+
+    console.log("Subscription.updateByPaypalId payload", {
+      subscriptionId,
+      status,
+      subscription,
+      startDate,
+      endDate,
+      cancelDate: resolvedCancelDate,
+    });
 
     const [result] = await pool.execute(
       `UPDATE subscriptions 
-     SET status = ?, subscription = ?, start_date = ?, end_date = ?
+     SET status = ?, subscription = ?, start_date = ?, end_date = ?, cancel_date = ?
      WHERE paypal_subscription_id = ?`,
-      [status, subscription ? 1 : 0, startDate, endDate, subscriptionId]
+      [status, subscription ? 1 : 0, startDate, endDate, resolvedCancelDate, subscriptionId]
     );
 
     return result;

@@ -241,6 +241,7 @@ CREATE TABLE subscriptions (
   status                  ENUM('PENDING','ACTIVE','CANCELLED','EXPIRED') DEFAULT 'PENDING',
   start_date              DATETIME,
   end_date                DATETIME,
+  cancel_date             DATETIME,
   created_at              DATETIME DEFAULT CURRENT_TIMESTAMP,
   updated_at              DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   CONSTRAINT fk_sub_user FOREIGN KEY (user_id) REFERENCES users (id)

@@ -22,7 +22,7 @@ router.post("/register", registerUser);
 // ── Protected ──
 router.get("/", verifyUser, getCurrentUser);
 router.get("/all", verifyUser, getAllUsers);
-router.get("/customers", verifyUser, getAllCustomer);
+router.get("/customers", getAllCustomer);
 router.get("/customers/booking",verifyUser,  getCustomerBookings);
 router.get("/dashboard", verifyUser, authorizeRoles("customer"), getCustomerDashboard);
 router.post("/logout", verifyUser, logout);

@@ -111,8 +111,8 @@ export const getAllCustomer = asyncHandler(async (req, res) => {
   const limit = Math.min(parseInt(req.query.limit || 5, 10), 100);
   const skip = (page - 1) * limit;
 
-  const total = await UserModel.countByRole("customer");
-  const customers = await UserModel.findByRole({ role: "customer", limit, skip });
+  const total = await UserModel.countByRole("customer", { excludeStatus: "softdeleted" });
+  const customers = await UserModel.findByRole({ role: "customer", limit, skip, excludeStatus: "softdeleted" });
 
   res.status(200).json({
     success: true,
@@ -265,6 +265,54 @@ export const updateUserProfile = asyncHandler(async (req, res) => {
 
 
 // delete customer
+// export const deleteCustomer = asyncHandler(async (req, res) => {
+//   const customerId = req.params.id;
+
+//   const conn = await pool.getConnection();
+
+//   try {
+//     await conn.beginTransaction();
+
+//     const user = await UserModel.findById(customerId);
+
+//     if (!user) {
+//       await conn.rollback();
+//       return res.status(404).json({
+//         success: false,
+//         message: "Customer not found",
+//       });
+//     }
+
+//     // delete Customer Revenue
+//     await UserModel.revenuedeleteById(customerId, conn);
+
+//     // Delete customer reviews
+//     await UserModel.deleteById(customerId, conn);
+
+
+
+//     // Delete bookings and all related records
+//     await UserModel.deleteCustomerBookings(customerId, conn);
+
+//     // delete Quoates
+//     await UserModel.deleteCustomerQuotes(customerId, conn);
+
+//     // Delete customer
+//     await UserModel.delete(customerId, conn);
+
+//     await conn.commit();
+
+//     return res.status(200).json({
+//       success: true,
+//       message: "Customer deleted successfully",
+//     });
+//   } catch (error) {
+//     await conn.rollback();
+//     throw error;
+//   } finally {
+//     conn.release();
+//   }
+// });
 export const deleteCustomer = asyncHandler(async (req, res) => {
   const customerId = req.params.id;
 
@@ -283,22 +331,7 @@ export const deleteCustomer = asyncHandler(async (req, res) => {
       });
     }
 
-    // delete Customer Revenue
-    await UserModel.revenuedeleteById(customerId, conn);
-
-    // Delete customer reviews
-    await UserModel.deleteById(customerId, conn);
-
-
-
-    // Delete bookings and all related records
-    await UserModel.deleteCustomerBookings(customerId, conn);
-
-    // delete Quoates
-    await UserModel.deleteCustomerQuotes(customerId, conn);
-
-    // Delete customer
-    await UserModel.delete(customerId, conn);
+    await UserModel.softDelete(customerId, conn);
 
     await conn.commit();
 
@@ -313,6 +346,7 @@ export const deleteCustomer = asyncHandler(async (req, res) => {
     conn.release();
   }
 });
+
 
 
 // customer active / inactive

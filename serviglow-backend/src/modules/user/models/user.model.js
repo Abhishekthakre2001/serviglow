@@ -43,11 +43,16 @@ export const UserModel = {
     );
   },
 
-  async countByRole(role) {
-    const [rows] = await pool.query(
-      "SELECT COUNT(*) AS total FROM users WHERE role = ?",
-      [role]
-    );
+  async countByRole(role, { excludeStatus } = {}) {
+    let query = "SELECT COUNT(*) AS total FROM users WHERE role = ?";
+    const values = [role];
+
+    if (excludeStatus) {
+      query += " AND (status IS NULL OR status != ?)";
+      values.push(excludeStatus);
+    }
+
+    const [rows] = await pool.query(query, values);
     return rows[0]?.total || 0;
   },
 
@@ -262,18 +267,17 @@ export const UserModel = {
   },
 
   async deleteCustomerQuotes(customerId, conn) {
-  await conn.query(
-    `DELETE FROM quotes
+    await conn.query(
+      `DELETE FROM quotes
      WHERE customer_id = ?`,
-    [customerId]
-  );
-},
+      [customerId]
+    );
+  },
 
 
 
-  async findByRole({ role, limit, skip }) {
-    const [rows] = await pool.query(
-      `SELECT
+  async findByRole({ role, limit, skip, excludeStatus }) {
+    let query = `SELECT
         id,
         first_name,
         last_name,
@@ -289,11 +293,20 @@ export const UserModel = {
         partner_status,
         created_at
      FROM users
-     WHERE role = ?
+     WHERE role = ?`;
+    const values = [role];
+
+    if (excludeStatus) {
+      query += ` AND (status IS NULL OR status != ?)`;
+      values.push(excludeStatus);
+    }
+
+    query += `
      ORDER BY id DESC
-     LIMIT ? OFFSET ?`,
-      [role, limit, skip]
-    );
+     LIMIT ? OFFSET ?`;
+    values.push(limit, skip);
+
+    const [rows] = await pool.query(query, values);
 
     return rows;
   },
@@ -323,4 +336,16 @@ export const UserModel = {
 
     return rows[0] || null;
   },
+
+  async softDelete(customerId, conn) {
+    const query = `
+    UPDATE users
+    SET
+      status = 'softdeleted',
+      deleted_at = NOW()
+    WHERE id = ?
+  `;
+
+    return conn.query(query, [customerId]);
+  }
 };

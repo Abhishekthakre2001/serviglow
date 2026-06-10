@@ -113,7 +113,12 @@ export const paypalWebhookHandler = async (req, res) => {
     const eventType = webhookEvent.event_type;
     const resource = webhookEvent.resource;
 
-    console.log("📌 EVENT:", eventType);
+    console.log("📌 PayPal webhook event:", {
+      eventType,
+      resourceId: resource?.id || resource?.billing_agreement_id,
+      resourceType: resource?.resource_type,
+      relationships: resource?.relationships,
+    });
 
     const subscriptionId = resource?.id || resource?.billing_agreement_id;
 
@@ -189,13 +194,23 @@ export const paypalWebhookHandler = async (req, res) => {
     // ======================================================
 
     if (eventType === "BILLING.SUBSCRIPTION.CANCELLED") {
+      const cancelDate = new Date();
 
-      await Subscription.updateByPaypalId(subscriptionId, {
+      console.log("📌 PayPal cancellation event payload", {
+        subscriptionId,
+        eventType,
+        cancelDate,
+      });
+
+      const updateResult = await Subscription.updateByPaypalId(subscriptionId, {
         status: "CANCELLED",
         subscription: false,
         startDate: null,
         endDate: null,
+        cancelDate,
       });
+
+      console.log("📌 PayPal cancellation update result", updateResult);
 
       await sendMail({
         to: customerEmail,
