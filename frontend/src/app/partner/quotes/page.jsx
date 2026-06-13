@@ -6,6 +6,7 @@ import { Eye } from "lucide-react";
 import Conformation from "@/components/ui/Conformation";
 import AdminLayout from "@/components/layout/AdminLayout";
 import contactQuotationApi from "@/services/contactQuotation";
+import ExportApi from "@/services/exportApi";
 import useServerPagination from "@/hooks/useServerPagination";
 export default function Quotes() {
   const [loadingResolve, setLoadingResolve] = useState(false);
@@ -283,6 +284,41 @@ Your Team`;
       setLoadingResolve(false);
     }
   };
+
+  const handleExportQuotes = async () => {
+  try {
+    const response =
+      await ExportApi.exportQuotes();
+
+    const blob = new Blob([
+      response.data,
+    ]);
+
+    const url =
+      window.URL.createObjectURL(blob);
+
+    const link =
+      document.createElement("a");
+
+    link.href = url;
+    link.download = "my-quotes.xlsx";
+
+    document.body.appendChild(link);
+
+    link.click();
+
+    link.remove();
+
+    window.URL.revokeObjectURL(url);
+  } catch (error) {
+    console.error(
+      "Quote export failed",
+      error
+    );
+  }
+};
+
+
   return (
     <AdminLayout>
       <Conformation
@@ -313,6 +349,7 @@ Your Team`;
         page={page}
         totalPages={totalPages}
         onPageChange={setPage}
+        onExport={handleExportQuotes}
       />
 
       {viewModal && (

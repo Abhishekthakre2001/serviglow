@@ -5,7 +5,8 @@ import PartnerGuard from "@/app/partner/PartnerGuard";
 import AdminLayout from "@/components/layout/AdminLayout";
 import DataTable from "@/components/ui/DataTable";
 import partnerApi from "@/services/partnerApi";
-import useServerPagination from "@/hooks/useServerPagination"; // ✅ ADD
+import useServerPagination from "@/hooks/useServerPagination"; 
+import ExportApi from "@/services/exportApi";
 
 export default function Page() {
   const [rows, setRows] = useState([]);
@@ -76,6 +77,40 @@ export default function Page() {
     { key: "status", label: "Status" },
   ];
 
+  const handleExportRevenue = async () => {
+  try {
+    const response =
+      await ExportApi.exportRevenue();
+
+    const blob = new Blob([
+      response.data,
+    ]);
+
+    const url =
+      window.URL.createObjectURL(blob);
+
+    const link =
+      document.createElement("a");
+
+    link.href = url;
+    link.download =
+      "my-revenue.xlsx";
+
+    document.body.appendChild(link);
+
+    link.click();
+
+    link.remove();
+
+    window.URL.revokeObjectURL(url);
+  } catch (error) {
+    console.error(
+      "Revenue export failed",
+      error
+    );
+  }
+};
+
   return (
     <PartnerGuard>
       <AdminLayout>
@@ -93,6 +128,7 @@ export default function Page() {
             page={page}
             totalPages={totalPages}
             onPageChange={setPage}
+            onExport={handleExportRevenue}
           />
         </div>
       </AdminLayout>

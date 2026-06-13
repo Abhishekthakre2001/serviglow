@@ -8,6 +8,7 @@ import DataTable from "@/components/ui/DataTable";
 import bookingApi from "@/services/bookingApi";
 import PartnerGuard from "@/app/partner/PartnerGuard";
 import Conformation from "@/components/ui/Conformation";
+import ExportApi from "@/services/exportApi";
 
 /* ================= STATUS BADGE ================= */
 const StatusBadge = ({ status }) => {
@@ -450,6 +451,51 @@ export default function PartnerBookingsPage() {
     [bookings],
   );
 
+  const handleExportBookings =
+    async (status = "") => {
+      try {
+        const response =
+          await ExportApi.exportBookings(
+            status
+          );
+
+        const blob = new Blob([
+          response.data,
+        ]);
+
+        const url =
+          window.URL.createObjectURL(
+            blob
+          );
+
+        const link =
+          document.createElement(
+            "a"
+          );
+
+        link.href = url;
+
+        link.download =
+          status
+            ? `${status.toLowerCase()}-bookings.xlsx`
+            : "all-bookings.xlsx";
+
+        document.body.appendChild(
+          link
+        );
+
+        link.click();
+
+        link.remove();
+
+        window.URL.revokeObjectURL(
+          url
+        );
+      } catch (error) {
+        console.error(error);
+      }
+    };
+
   /* ================= TABS ================= */
   const tabs = [
     {
@@ -462,6 +508,9 @@ export default function PartnerBookingsPage() {
             data={bookings}
             loading={loading}
             showActions={false}
+            onExport={() =>
+              handleExportBookings()
+            }
             onView={(row) => router.push(`/partner/bookings/${row.bookingId}`)}
           />
         </div>
@@ -477,6 +526,11 @@ export default function PartnerBookingsPage() {
             data={confirmed}
             loading={loading}
             showActions={false}
+            onExport={() =>
+              handleExportBookings(
+                "Accept"
+              )
+            }
             onView={(row) => router.push(`/partner/bookings/${row.bookingId}`)}
           />
         </div>
@@ -492,6 +546,11 @@ export default function PartnerBookingsPage() {
             data={pending}
             showActions={false}
             loading={loading}
+            onExport={() =>
+              handleExportBookings(
+                "Pending"
+              )
+            }
             onView={(row) => router.push(`/partner/bookings/${row.bookingId}`)}
           />
         </div>
@@ -507,6 +566,11 @@ export default function PartnerBookingsPage() {
             data={cancelled}
             loading={loading}
             showActions={false}
+            onExport={() =>
+              handleExportBookings(
+                "Reject"
+              )
+            }
             onView={(row) => router.push(`/partner/bookings/${row.bookingId}`)}
           />
         </div>
@@ -522,6 +586,11 @@ export default function PartnerBookingsPage() {
             data={completed}
             loading={loading}
             showActions={false}
+            onExport={() =>
+              handleExportBookings(
+                "Completed"
+              )
+            }
             onView={(row) => router.push(`/partner/bookings/${row.bookingId}`)}
           />
         </div>
@@ -537,6 +606,11 @@ export default function PartnerBookingsPage() {
             data={Cancelled}
             loading={loading}
             showActions={false}
+            onExport={() =>
+              handleExportBookings(
+                "Cancelled"
+              )
+            }
             onView={(row) => router.push(`/partner/bookings/${row.bookingId}`)}
           />
         </div>

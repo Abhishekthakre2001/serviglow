@@ -7,6 +7,7 @@ import Conformation from "@/components/ui/Conformation";
 import { Eye, Pencil, Trash2 } from "lucide-react";
 import reviewsApi from "@/services/reviewsApi";
 import useServerPagination from "@/hooks/useServerPagination";
+import ExportApi from "@/services/exportApi";
 
 export default function Reviews() {
   const [reviews, setReviews] = useState([]);
@@ -302,6 +303,32 @@ export default function Reviews() {
     setReviews(paginatedReviews);
   }, [paginatedReviews]);
 
+
+  const handleExportReviews = async () => {
+    console.log("handleExportReviews")
+  try {
+    const response =
+      await ExportApi.exportReviews();
+
+    const blob = new Blob([response.data]);
+
+    const url =
+      window.URL.createObjectURL(blob);
+
+    const link =
+      document.createElement("a");
+
+    link.href = url;
+    link.download = "reviews.xlsx";
+
+    link.click();
+
+    window.URL.revokeObjectURL(url);
+  } catch (error) {
+    console.error("Review export failed", error);
+  }
+};
+
   return (
     <AdminLayout>
       <Conformation
@@ -328,6 +355,7 @@ export default function Reviews() {
         page={page}
         totalPages={totalPages}
         onPageChange={setPage}
+        onExport={handleExportReviews}
       />
 
       {/* VIEW MODAL */}

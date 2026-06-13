@@ -7,6 +7,7 @@ import DataTable from "@/components/ui/DataTable";
 import Conformation from "@/components/ui/Conformation";
 import { Eye } from "lucide-react";
 import reviewsApi from "@/services/reviewsApi";
+import ExportApi from "@/services/exportApi";
 // import useServerPagination from "@/hooks/useServerPagination";
 
 export default function PartnerReviews() {
@@ -181,6 +182,29 @@ export default function PartnerReviews() {
     },
   ];
 
+  const handleExportReviews = async () => {
+    try {
+      const res = await ExportApi.exportReviews();
+
+      const blob = new Blob([res.data]);
+
+      const url = window.URL.createObjectURL(blob);
+
+      const link = document.createElement("a");
+
+      link.href = url;
+      link.download = "partner-reviews.xlsx";
+
+      document.body.appendChild(link);
+
+      link.click();
+
+      link.remove();
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
   return (
     <AdminLayout>
       <Conformation
@@ -204,6 +228,7 @@ export default function PartnerReviews() {
         showActions={false}
         page={page}
         totalPages={totalPages}
+        onExport={handleExportReviews}
         onPageChange={(newPage) => setPage(newPage)}
       />
 

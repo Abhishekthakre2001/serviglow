@@ -7,6 +7,7 @@ import userApi from "../../../services/userApi";
 import useServerPagination from "@/hooks/useServerPagination";
 import { useRouter } from "next/navigation";
 import Alert from "@/components/ui/Conformation";
+import ExportApi from "@/services/exportApi";
 
 export default function Users() {
   const router = useRouter();
@@ -206,6 +207,32 @@ export default function Users() {
     }
   };
 
+  const handleExportCustomers = async () => {
+    try {
+      const response =
+        await ExportApi.exportCustomers();
+
+      const blob = new Blob([
+        response.data,
+      ]);
+
+      const url =
+        window.URL.createObjectURL(blob);
+
+      const link =
+        document.createElement("a");
+
+      link.href = url;
+      link.download = "customers.xlsx";
+
+      link.click();
+
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
   return (
     <AdminLayout>
       <Alert
@@ -226,7 +253,7 @@ export default function Users() {
         loading={loading || processing}
         showActions={true}
         pagination={true}
-
+        onExport={handleExportCustomers}
         // built-in actions
         onView={handleView}
         onDelete={handleDelete}

@@ -50,6 +50,7 @@ import QuoteRoutes from "./modules/quote/routes/quote.routes.js";
 import ServicesBookingRoutes from "./modules/booking/routes/booking.routes.js";
 import ReviewRoutrtes from "./modules/reviews/routes/review.routes.js";
 import AnnouncementRoutes from "./modules/announcement/routes/announcement.routes.js";
+import ExportRoutes from "./modules/export/routes/export.routes.js";
 
 app.use(rateLimiter);
 app.use("/uploads", express.static(path.join(process.cwd(), "uploads")));
@@ -76,5 +77,6 @@ app.use("/api/v1/quote", QuoteRoutes);
 app.use("/api/v1/service-booking", ServicesBookingRoutes);
 app.use("/api/v1/reviews", ReviewRoutrtes);
 app.use("/api/v1/announcement", AnnouncementRoutes);
+app.use("/api/v1/export", ExportRoutes);
 
 export default app;

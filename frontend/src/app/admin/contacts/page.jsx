@@ -7,6 +7,7 @@ import Conformation from "@/components/ui/Conformation";
 import AdminLayout from "@/components/layout/AdminLayout";
 import contactQuotationApi from "@/services/contactQuotation";
 import useServerPagination from "@/hooks/useServerPagination";
+import ExportApi from "@/services/exportApi";
 
 export default function Contacts() {
   /* ================= TABLE COLUMNS ================= */
@@ -192,6 +193,35 @@ export default function Contacts() {
     window.open(url, "_blank");
   };
 
+
+  const handleExportContacts = async () => {
+  try {
+    const response =
+      await ExportApi.exportContacts();
+
+    const blob = new Blob([
+      response.data,
+    ]);
+
+    const url =
+      window.URL.createObjectURL(blob);
+
+    const link =
+      document.createElement("a");
+
+    link.href = url;
+    link.download = "contacts.xlsx";
+
+    link.click();
+
+    window.URL.revokeObjectURL(url);
+  } catch (error) {
+    console.error(
+      "Contact export failed",
+      error
+    );
+  }
+};
   /* ================= UI ================= */
 
   return (
@@ -224,6 +254,7 @@ export default function Contacts() {
           row.viewingStatus ? "bg-gray-50" : "bg-blue-50 font-medium"
         }
 
+        onExport={handleExportContacts}
         pagination={true}
         currentPage={page}
         totalPages={totalPages}

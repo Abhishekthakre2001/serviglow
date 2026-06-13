@@ -8,7 +8,9 @@ import Conformation from "@/components/ui/Conformation";
 import FileUpload from "@/components/ui/FileUpload";
 import categoryApi from "../../services/category";
 import { useEffect } from "react";
-import useServerPagination from '../../hooks/useServerPagination.js'
+import useServerPagination from '../../hooks/useServerPagination.js';
+import ExportApi from "@/services/exportApi";
+
 
 export default function Category() {
   const baseURL = process.env.NEXT_PUBLIC_IMAGE_BASE_URL;
@@ -218,6 +220,43 @@ export default function Category() {
       })),
   });
 
+  const handleExportCategory = async () => {
+  try {
+    const response = await ExportApi.exportMaster(
+      "category",
+      "excel"
+    );
+
+    const blob = new Blob([response.data]);
+
+    const url = window.URL.createObjectURL(blob);
+
+    const link = document.createElement("a");
+
+    link.href = url;
+    link.download = "categories.xlsx";
+
+    document.body.appendChild(link);
+
+    link.click();
+
+    link.remove();
+
+    window.URL.revokeObjectURL(url);
+  } catch (error) {
+    console.error("Export failed", error);
+
+    setConfirmState({
+      open: true,
+      type: "error",
+      title: "Export Failed",
+      message:
+        error?.response?.data?.message ||
+        "Unable to export categories",
+    });
+  }
+};
+
   return (
     <>
       <Conformation
@@ -248,6 +287,7 @@ export default function Category() {
         serverSide={true}
         currentPageProp={page}
         totalPagesProp={totalPages}
+        onExport={handleExportCategory}
         onPageChange={setPage}
         onLimitChange={setLimit}
         onDelete={(row) => {

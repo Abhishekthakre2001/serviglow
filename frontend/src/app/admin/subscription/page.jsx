@@ -7,6 +7,7 @@ import Tabs from "@/components/ui/Tabs";
 import DataTable from "@/components/ui/DataTable";
 import paymentApi from "@/services/paymentApi";
 import Conformation from "@/components/ui/Conformation";
+import ExportApi from "@/services/exportApi";
 
 /* ================= STATUS BADGE ================= */
 const StatusBadge = ({ status }) => {
@@ -395,6 +396,53 @@ export default function SubscriptionsPage() {
         }
     };
 
+    const handleExport = async (status = "") => {
+  try {
+    const response =
+      await ExportApi.exportSubscriptions(
+        status
+      );
+
+    const blob = new Blob([
+      response.data,
+    ]);
+
+    const url =
+      window.URL.createObjectURL(blob);
+
+    const link =
+      document.createElement("a");
+
+    link.href = url;
+
+    link.download = status
+      ? `${status.toLowerCase()}-subscriptions.xlsx`
+      : "all-subscriptions.xlsx";
+
+    document.body.appendChild(link);
+
+    link.click();
+
+    link.remove();
+
+    window.URL.revokeObjectURL(url);
+  } catch (error) {
+    console.error(
+      "Subscription export failed",
+      error
+    );
+
+    setConfirmState?.({
+      open: true,
+      type: "error",
+      title: "Export Failed",
+      message:
+        error?.response?.data?.message ||
+        "Unable to export subscriptions",
+    });
+  }
+};
+
 
     /* ================= TABS ================= */
     const tabs = [
@@ -408,6 +456,7 @@ export default function SubscriptionsPage() {
                         data={allSubs}
                         loading={loadingAll}
                         showActions={false}
+                        onExport={() => handleExport()}
                     // if DataTable supports refresh button:
                     // onRefresh={() => refreshTab()}
                     />
@@ -424,6 +473,7 @@ export default function SubscriptionsPage() {
                         data={activeSubs}
                         loading={loadingActive}
                         showActions={false}
+                        onExport={() => handleExport("ACTIVE")}
                     // onRefresh={() => refreshTab("ACTIVE")}
                     />
                 </div>
@@ -439,6 +489,7 @@ export default function SubscriptionsPage() {
                         data={pendingSubs}
                         loading={loadingPending}
                         showActions={false}
+                        onExport={() => handleExport("PENDING")}
                     // onRefresh={() => refreshTab("PENDING")}
                     />
                 </div>
@@ -454,6 +505,7 @@ export default function SubscriptionsPage() {
                         data={cancelSubs}
                         loading={loadingCancel}
                         showActions={false}
+                        onExport={() => handleExport("CANCELLED")}
                     />
                 </div>
             ),
@@ -463,6 +515,7 @@ export default function SubscriptionsPage() {
             content: (
                 <div className="w-full overflow-x-auto">
                     <DataTable
+                    onExport={() => handleExport("EXPIRED")}
                         title="Expired Subscriptions"
                         columns={columns}
                         data={expiredSubs}

@@ -10,6 +10,7 @@ import { useFetchData } from "@/hooks/useFetchData";
 import partnerApi from "@/services/partnerApi";
 import AdminGuard from "@/app/admin/AdminGuard";
 import Alert from "@/components/ui/Conformation";
+import ExportApi from "@/services/exportApi";
 
 /* ================= STATUS BADGE ================= */
 
@@ -60,6 +61,35 @@ export default function Pathners() {
     message: "",
     onConfirm: null,
   });
+
+  const handleExportPartners = async (status) => {
+    try {
+      const response = await ExportApi.exportPartners(
+        status,
+        "excel"
+      );
+
+      const blob = new Blob([response.data]);
+
+      const url = window.URL.createObjectURL(blob);
+
+      const link = document.createElement("a");
+
+      link.href = url;
+
+      link.download = `${status.toLowerCase()}-partners.xlsx`;
+
+      document.body.appendChild(link);
+
+      link.click();
+
+      link.remove();
+
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error("Export failed", error);
+    }
+  };
   /* ================= TABLE COLUMNS ================= */
 
   const columns = [
@@ -118,6 +148,7 @@ export default function Pathners() {
           columns={columns}
           data={getFilteredPartners("Approved")}
           onView={(row) => setViewPartner(row)}
+          onExport={() => handleExportPartners("Approved")}
         />
       ),
     },
@@ -138,6 +169,7 @@ export default function Pathners() {
             columns={columns}
             data={getFilteredPartners("Pending")}
             onView={(row) => router.push(`/admin/partners/${row.id}`)}
+            onExport={() => handleExportPartners("Pending")}
           />
         </div>
       ),

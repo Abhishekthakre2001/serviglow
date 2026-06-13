@@ -8,6 +8,7 @@ import React, { useEffect, useState } from "react";
 import serviceApi from "../../../services/serviceApi";
 import Conformatiom from "@/components/ui/Conformation";
 import useServerPagination from "@/hooks/useServerPagination";
+import ExportApi from "@/services/exportApi";
 /* ================= STATUS BADGE ================= */
 
 const StatusBadge = ({ status }) => {
@@ -78,7 +79,7 @@ export default function Servicess() {
         return (
           <div className="w-12 h-12 rounded overflow-hidden">
             <img
-              src={img  || "/images/default_img.webp"}
+              src={img || "/images/default_img.webp"}
               alt={row?.title || "service"}
               className="w-full h-full object-cover"
               onError={(e) => {
@@ -243,7 +244,38 @@ export default function Servicess() {
       },
     });
   };
-  console.log("Ser", services)
+  const handleExport = async () => {
+    try {
+      const response =
+        await ExportApi.exportServices();
+
+      const blob = new Blob([
+        response.data,
+      ]);
+
+      const url =
+        window.URL.createObjectURL(blob);
+
+      const link =
+        document.createElement("a");
+
+      link.href = url;
+      link.download = "services.xlsx";
+
+      document.body.appendChild(link);
+
+      link.click();
+
+      link.remove();
+
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error(
+        "Service export failed",
+        error
+      );
+    }
+  };
   /* ================= UI ================= */
 
   return (
@@ -262,6 +294,7 @@ export default function Servicess() {
               page={page}
               totalPages={totalPages}
               onPageChange={setPage}
+              onExport={handleExport}
             />
           </div>
         </AdminLayout>
