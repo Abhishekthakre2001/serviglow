@@ -9,7 +9,7 @@ import HomeSectionContent from "@/components/ui/HomeSection";
 import BannerContent from "@/components/ui/Banner";
 import PoliciesManager from "@/components/ui/Policies";
 import Announcement from "@/components/ui/Announcement";
-import DymanicPriceing from "@/components/ui/DymanicPriceing";
+// import DymanicPriceing from "@/components/ui/DymanicPriceing";
 import BookingTerms from "@/components/ui/BookingTerms";
 import PagesCMS from "@/components/ui/PagesCMS";
 
@@ -21,7 +21,7 @@ const TABS = [
   { key: "footer", label: "Footer" },
   { key: "policies", label: "Policies" },
   { key: "announcement", label: "Announcement" },
-  { key: "priceing", label: "Priceing" },
+  // { key: "priceing", label: "Priceing" },
   { key: "Bookingt&c", label: "Booking T&c " },
   { key: "Pages", label: "Pages" },
 ];
@@ -496,9 +496,9 @@ export default function Content() {
               )
             )}
 
-            {activeTab === "priceing" && (
+            {/* {activeTab === "priceing" && (
               <DymanicPriceing />
-            )}
+            )} */}
 
             {activeTab === "Bookingt&c" && (
               <BookingTerms />

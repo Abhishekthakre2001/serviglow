@@ -38,6 +38,7 @@ const ROLE_MENUS = {
     { name: "Admin's", icon: UserCircle, href: "/admin/admins" },
     { name: "Reviews", icon: MessageSquare, href: "/admin/reviews" },
     { name: "Subscription", icon: SquareUserRound, href: "/admin/subscription" },
+    { name: "Pricing", icon: Settings2, href: "/admin/priceing" },
     { name: "Account", icon: UserCircle, href: "/admin/account" },
     { name: "Content", icon: Settings2, href: "/admin/content" },
   ],
