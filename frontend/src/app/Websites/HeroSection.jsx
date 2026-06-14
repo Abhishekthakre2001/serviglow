@@ -163,6 +163,17 @@ export default function PremiumHero({
 
               )}
 
+              {item.totalSubCategory && (
+
+                <p className="animate-fadeUp  max-w-2xl text-base leading-relaxed text-gray-300 md:text-xl lg:text-2xl">
+
+                  Available Sub-Categoryes {item.totalSubCategory}
+
+                </p>
+
+              )}
+
+
               <div className="mt-8 w-full max-w-md">
                 <input
                   type="text"

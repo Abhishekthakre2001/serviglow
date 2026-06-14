@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import React, { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import AdminLayout from "@/components/layout/AdminLayout";
@@ -458,6 +459,11 @@ export default function Pathners() {
                     <StatusBadge status={viewPartner.status} />
                     <ActiveBadge isActive={viewPartner.isActive} />
                   </div>
+                  <Link href={`/admin/partners/booking/${viewPartner?.raw?.user_id}`}>
+                    <button className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg text-sm">
+                      View Booking
+                    </button>
+                  </Link>
                 </div>
 
                 {/* STATS */}

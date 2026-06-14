@@ -197,6 +197,44 @@ export const getMyBookings = asyncHandler(async (req, res) => {
     });
 });
 
+
+// Partner wise booking
+export const getPartnerBookings = asyncHandler(async (req, res) => {
+
+    const { partnerId } = req.params;
+    const { status } = req.query;
+
+    const page = Math.max(parseInt(req.query.page || 1, 10), 1);
+    const limit = Math.min(parseInt(req.query.limit || 5, 10), 100);
+    const skip = (page - 1) * limit;
+
+    const total = await BookingModel.countByUser({
+        userId: partnerId,
+        role: "partner",
+        status
+    });
+
+    const bookings = await BookingModel.findByUser({
+        userId: partnerId,
+        role: "partner",
+        status,
+        limit,
+        skip
+    });
+
+    return res.status(200).json({
+        success: true,
+        count: bookings.length,
+        data: bookings,
+        pagination: {
+            total,
+            page,
+            limit,
+            totalPages: Math.ceil(total / limit)
+        }
+    });
+});
+
 // ══════════════════════════════════════════════
 // CANCEL BOOKING BY CUSTOMER
 // ══════════════════════════════════════════════

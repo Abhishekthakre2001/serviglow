@@ -74,6 +74,30 @@ const ROLE_MENUS = {
   ],
 };
 
+const ROUTE_PERMISSION_MAP = {
+  "/admin/dashboard": "dashboard",
+
+  "/admin/partners": "partners",
+
+  "/admin/masters": "master_module",
+
+  "/admin/users": "customer",
+
+  "/admin/contacts": "inquiry",
+
+  "/admin/admins": "admins",
+
+  "/admin/reviews": "reviews",
+
+  "/admin/subscription": "subscription",
+
+  "/admin/account": "account",
+
+  "/admin/content": "content",
+
+  "/admin/priceing": "content",
+};
+
 export default function AdminLayout({ children }) {
 
   const router = useRouter();
@@ -82,6 +106,8 @@ export default function AdminLayout({ children }) {
   const [selectedAdmin, setSelectedAdmin] = useState(null);
 
   const [adminPermissions, setAdminPermissions] = useState(null);
+  const [hasPageAccess, setHasPageAccess] = useState(true);
+
 
   const handlePermission = async (row) => {
 
@@ -224,6 +250,43 @@ export default function AdminLayout({ children }) {
   const [logoutOpen, setLogoutOpen] = useState(false);
   const [role, setRole] = useState(null);
   const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+
+    if (role !== "admin") {
+      setHasPageAccess(true);
+      return;
+    }
+
+    if (!adminPermissions) return;
+
+    const matchedRoute = Object.keys(
+      ROUTE_PERMISSION_MAP
+    ).find(
+      (route) =>
+        pathname === route ||
+        pathname.startsWith(route + "/")
+    );
+
+    // route not protected
+    if (!matchedRoute) {
+      setHasPageAccess(true);
+      return;
+    }
+
+    const permissionKey =
+      ROUTE_PERMISSION_MAP[matchedRoute];
+
+    const allowed =
+      Number(adminPermissions?.[permissionKey]) === 1;
+
+    setHasPageAccess(allowed);
+
+  }, [
+    pathname,
+    adminPermissions,
+    role
+  ]);
 
   useEffect(() => {
     setMounted(true);
@@ -454,11 +517,18 @@ export default function AdminLayout({ children }) {
           </main> */}
           <main className="flex-1 overflow-auto p-4 md:p-6">
 
-            {role === "admin" &&
+            {/* {role === "admin" &&
               adminPermissions &&
               Object.values(adminPermissions).every(
                 (value) => Number(value) === 0
               ) ? (
+              <NoAccess />
+            ) : (
+              children
+            )} */}
+            {role === "admin" &&
+              adminPermissions &&
+              !hasPageAccess ? (
               <NoAccess />
             ) : (
               children

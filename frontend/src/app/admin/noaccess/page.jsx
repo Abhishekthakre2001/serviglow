@@ -55,7 +55,7 @@ export default function Page() {
 
                             {/* Description */}
                             <p className="mt-6 text-base md:text-lg text-gray-600 max-w-2xl mx-auto leading-relaxed">
-                                You currently do not have permission to access any modules or pages.
+                                You currently do not have permission to access this modules or pages.
                                 Please contact your super admin to enable permissions for your account.
                             </p>
 

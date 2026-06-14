@@ -3,6 +3,24 @@ import axiosInstance from "./axiosInstance";
 const bookingApi = {
   getMyBookings: () => axiosInstance.get("/service-booking/my-bookings"),
 
+  // getpartnerwiseBookings: (partnerId) => axiosInstance.get(`/service-booking/partner-bookings/${partnerId}&page=1&limit=10`),
+
+  getpartnerwiseBookings: ({
+    partnerId,
+    page = 1,
+    limit = 10,
+  }) =>
+    axiosInstance.get(
+      `/service-booking/partner-bookings/${partnerId}`,
+      {
+        params: {
+          page,
+          limit,
+        },
+      }
+    ),
+
+
   acceptBooking: (bookingId) =>
     axiosInstance.patch(`/service-booking/partner/accept/${bookingId}`),
 

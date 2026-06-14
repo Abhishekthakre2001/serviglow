@@ -702,13 +702,32 @@ export const getUsedCategories = asyncHandler(async (req, res) => {
 
   if (topIds.length) {
 
+    // const [topCats] = await pool.query(
+
+    //   `SELECT * 
+    //    FROM categories 
+    //    WHERE id IN (?) 
+    //    AND status = 1`,
+
+    //   [topIds]
+    // );
     const [topCats] = await pool.query(
+      `
+  SELECT
+      c.*,
+      COUNT(DISTINCT s.sub_category_id) AS totalSubCategory
 
-      `SELECT * 
-       FROM categories 
-       WHERE id IN (?) 
-       AND status = 1`,
+  FROM categories c
 
+  LEFT JOIN services s
+      ON s.category_id = c.id
+      AND s.is_active = true
+
+  WHERE c.id IN (?)
+    AND c.status = 1
+
+  GROUP BY c.id
+  `,
       [topIds]
     );
 
@@ -728,20 +747,44 @@ export const getUsedCategories = asyncHandler(async (req, res) => {
       const existingIds =
         topCarouselCategories.map(c => c.id);
 
+      // const [latestCats] = await pool.query(
+
+      //   `SELECT * 
+      //    FROM categories 
+      //    WHERE status = 1
+      //    AND id NOT IN (?)
+      //    ORDER BY created_at DESC
+      //    LIMIT ?`,
+
+      //   [
+      //     existingIds.length
+      //       ? existingIds
+      //       : [0],
+
+      //     remainingCount
+      //   ]
+      // );
       const [latestCats] = await pool.query(
+        `
+  SELECT
+      c.*,
+      COUNT(DISTINCT s.sub_category_id) AS totalSubCategory
 
-        `SELECT * 
-         FROM categories 
-         WHERE status = 1
-         AND id NOT IN (?)
-         ORDER BY created_at DESC
-         LIMIT ?`,
+  FROM categories c
 
+  LEFT JOIN services s
+      ON s.category_id = c.id
+      AND s.is_active = true
+
+  WHERE c.status = 1
+    AND c.id NOT IN (?)
+
+  GROUP BY c.id
+  ORDER BY c.created_at DESC
+  LIMIT ?
+  `,
         [
-          existingIds.length
-            ? existingIds
-            : [0],
-
+          existingIds.length ? existingIds : [0],
           remainingCount
         ]
       );
@@ -754,13 +797,32 @@ export const getUsedCategories = asyncHandler(async (req, res) => {
 
   } else {
 
-    const [fallbackCats] = await pool.query(
+    // const [fallbackCats] = await pool.query(
 
-      `SELECT * 
-       FROM categories 
-       WHERE status = 1 
-       ORDER BY created_at DESC 
-       LIMIT 5`
+    //   `SELECT * 
+    //    FROM categories 
+    //    WHERE status = 1 
+    //    ORDER BY created_at DESC 
+    //    LIMIT 5`
+    // );
+    const [fallbackCats] = await pool.query(
+      `
+  SELECT
+      c.*,
+      COUNT(DISTINCT s.sub_category_id) AS totalSubCategory
+
+  FROM categories c
+
+  LEFT JOIN services s
+      ON s.category_id = c.id
+      AND s.is_active = true
+
+  WHERE c.status = 1
+
+  GROUP BY c.id
+  ORDER BY c.created_at DESC
+  LIMIT 5
+  `
     );
 
     topCarouselCategories =

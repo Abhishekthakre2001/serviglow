@@ -267,9 +267,101 @@ export const togglePartnerActive = asyncHandler(async (req, res) => {
   }
 
   const partner = await PartnerModel.findById(id);
+  const PartnerEmail = await PartnerModel.findByUserId(partner.user_id)
+  // console.log("id", id);
+  // console.log("user_id", partner.user_id)
+  // console.log("Partner", PartnerEmail.email)
   if (!partner) return res.status(404).json({ success: false, message: "Partner not found" });
 
   await PartnerModel.toggleActive(id, isActive);
+
+  // =========================
+  // SEND EMAIL
+  // =========================
+
+  try {
+    await sendMail({
+      to: PartnerEmail.email,
+      subject: `Account ${isActive ? "Activated" : "Deactivated"} - ServiGlow`,
+      html: `
+      <div style="font-family:Arial,sans-serif;background:#f4f6f9;padding:40px 0;">
+        <div style="max-width:600px;margin:0 auto;background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 5px 20px rgba(0,0,0,0.08);">
+
+          <div style="background:linear-gradient(90deg,#2563eb,#f97316);padding:20px;text-align:center;color:#fff;">
+            <h2 style="margin:0;">ServiGlow</h2>
+          </div>
+
+          <div style="padding:30px;">
+
+            <h3 style="color:#111827;">
+              ${isActive
+          ? "✅ Account Activated"
+          : "⚠️ Account Deactivated"
+        }
+            </h3>
+
+            <p>
+              Dear <b>${PartnerEmail.first_name || ""} ${PartnerEmail.last_name || ""
+        }</b>,
+            </p>
+
+            ${isActive
+          ? `
+                <p>
+                  Great news! Your partner account has been
+                  <b style="color:#16a34a;">activated</b>.
+                </p>
+
+                <p>
+                  You can now log in and start receiving customer requests and bookings through ServiGlow.
+                </p>
+              `
+          : `
+                <p>
+                  Your partner account has been
+                  <b style="color:#dc2626;">deactivated</b>.
+                </p>
+
+                <p>
+                  You will temporarily be unable to access partner services and receive new bookings.
+                </p>
+
+                <p>
+                  If you believe this was done in error, please contact our support team.
+                </p>
+              `
+        }
+
+            <div style="background:#f9fafb;padding:20px;border-radius:8px;margin:20px 0;">
+              <p><b>Name:</b> ${PartnerEmail.first_name || ""} ${PartnerEmail.last_name || ""
+        }</p>
+              <p><b>Email:</b> ${PartnerEmail.email}</p>
+              <p>
+                <b>Status:</b>
+                ${isActive
+          ? '<span style="color:#16a34a;">Active</span>'
+          : '<span style="color:#dc2626;">Inactive</span>'
+        }
+              </p>
+            </div>
+
+            <p>
+              Thank you for being part of the ServiGlow partner network.
+            </p>
+
+          </div>
+
+          <div style="background:#111827;padding:15px;text-align:center;color:#fff;font-size:12px;">
+            © ${new Date().getFullYear()} ServiGlow. All rights reserved.
+          </div>
+
+        </div>
+      </div>
+      `,
+    });
+  } catch (error) {
+    console.error("Partner status email failed:", error);
+  }
 
   res.status(200).json({
     success: true,
