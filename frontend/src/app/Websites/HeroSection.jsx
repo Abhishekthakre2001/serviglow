@@ -19,6 +19,8 @@ export default function PremiumHero({
 
   const router = useRouter();
 
+  const [Searchzip, setSearchzip] = useState('');
+
   const [slides, setSlides] = useState([]);
 
   const [current, setCurrent] = useState(0);
@@ -167,21 +169,32 @@ export default function PremiumHero({
 
                 <p className="animate-fadeUp  max-w-2xl text-base leading-relaxed text-gray-300 md:text-xl lg:text-2xl">
 
-                  Available Sub-Categoryes {item.totalSubCategory}
+                  Available Sub-Categories {item.totalSubCategory}
 
                 </p>
 
               )}
 
 
-              <div className="mt-8 w-full max-w-md">
+              <div className="mt-8 w-full max-w-md relative">
+
+                {/* INPUT */}
                 <input
                   type="text"
-                  value={zipCode}
-                  onChange={(e) => setZipCode(e.target.value)}
+                  value={Searchzip}
+                  onChange={(e) => setSearchzip(e.target.value)}
                   placeholder="Search services by ZIP Code"
-                  className="w-full rounded-full border border-white/20 bg-white/10 backdrop-blur-xl px-6 py-4 text-white placeholder:text-gray-300 outline-none focus:border-blue-400"
+                  className="w-full rounded-full border border-white/20 bg-white/10 backdrop-blur-xl px-6 py-4 pr-28 text-white placeholder:text-gray-300 outline-none focus:border-blue-400"
                 />
+
+                {/* BUTTON INSIDE INPUT */}
+                <button
+                  onClick={() => setZipCode(Searchzip)}
+                  className="absolute right-1 top-1/2 -translate-y-1/2 rounded-full bg-gradient-to-r from-orange-500 to-yellow-500 px-5 py-2 text-sm font-semibold text-white hover:scale-105 transition"
+                >
+                  Search
+                </button>
+
               </div>
 
               {/* BUTTONS */}

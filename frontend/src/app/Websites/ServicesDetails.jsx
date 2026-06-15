@@ -485,7 +485,7 @@ export default function ServiceDetailsPage() {
             </div>
 
             {/* Partner Info */}
-            {service?.createdBy && (
+            {/* {service?.createdBy && (
               <div className="mt-8 bg-white rounded-2xl p-5 shadow-sm">
                 <p className="text-gray-800 font-semibold">
                   Provided by: {service.first_name}{" "}
@@ -498,7 +498,7 @@ export default function ServiceDetailsPage() {
                   {service.createdBy.phone}
                 </p>
               </div>
-            )}
+            )} */}
           </div>
         </div>
 
