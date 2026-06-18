@@ -654,29 +654,23 @@ export const getUsedCategories = asyncHandler(async (req, res) => {
     }
 
     categoriesQuery += `
-    INNER JOIN partner_profiles pp
-      ON pp.user_id = s.created_by
-  `;
+INNER JOIN partner_profiles pp
+  ON pp.user_id = s.created_by
+`;
 
     categoriesQuery += `
-    WHERE
-      s.is_active = 1
-      AND c.status = 1
-      AND pp.is_active = 1
-      AND pp.approval_status = 'approved'
-
-      AND pp.service_areas IS NOT NULL
-      AND pp.service_areas != ''
-      AND JSON_VALID(pp.service_areas)
-
-    AND JSON_CONTAINS(pp.service_areas, CONCAT('"', ? ,'"'))
-      OR
-      JSON_CONTAINS(
-          pp.service_areas,
-          CAST(? AS JSON)
-      )
-)
-  `;
+WHERE
+  s.is_active = 1
+  AND c.status = 1
+  AND pp.is_active = 1
+  AND pp.approval_status = 'approved'
+  AND pp.service_areas IS NOT NULL
+  AND pp.service_areas != ''
+  AND JSON_VALID(pp.service_areas)
+  AND (
+    JSON_CONTAINS(pp.service_areas, CONCAT('"', ? ,'"'))
+  )
+`;
 
     queryParams.push(numericZip);
     queryParams.push(numericZip);
