@@ -359,6 +359,57 @@ export const getMyServices = asyncHandler(async (req, res) => {
 });
 
 
+export const getPartnerServices = asyncHandler(async (req, res) => {
+
+  const { userId } = req.query;
+
+  const pageNum = Math.max(parseInt(req.query.page || 1, 10), 1);
+
+  const limitNum = Math.min(Math.max(parseInt(req.query.limit || 10, 10), 1), 100);
+
+  const skip = (pageNum - 1) * limitNum;
+
+
+
+  const total = await ServiceModel.countMyServices(userId);
+
+  const services = await ServiceModel.findMyServicesPaginated({
+
+    userId, limit: limitNum, skip,
+
+  });
+
+
+
+  if (!services.length) {
+
+    return res.status(200).json({
+
+      success: true, message: "No services found", count: 0, data: [],
+
+      pagination: { total, page: pageNum, limit: limitNum, totalPages: Math.ceil(total / limitNum) },
+
+    });
+
+  }
+
+
+
+  res.status(200).json({
+
+    success: true,
+
+    count: services.length,
+
+    data: services.map(parseServiceRow),
+
+    pagination: { total, page: pageNum, limit: limitNum, totalPages: Math.ceil(total / limitNum) },
+
+  });
+
+});
+
+
 
 // ══════════════════════════════════════════════
 

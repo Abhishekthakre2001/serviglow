@@ -525,6 +525,12 @@ export default function Pathners() {
                       View Booking
                     </button>
                   </Link>
+
+                  <Link href={`/admin/partners/services/${viewPartner?.raw?.user_id}`}>
+                    <button className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg text-sm">
+                      View Services
+                    </button>
+                  </Link>
                 </div>
 
                 {/* STATS */}

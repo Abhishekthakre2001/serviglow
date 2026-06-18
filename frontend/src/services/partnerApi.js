@@ -25,6 +25,11 @@ const partnerApi = {
   deletePartnerDocument: (partnerId, documentType = {}) =>
     axiosInstance.delete(`/admin/partners/${partnerId}/document/${documentType}`),
 
+  getPartnerServices: (params) =>
+    axiosInstance.get("/service/partner-services", {
+      params,
+    }),
+
 };
 
 

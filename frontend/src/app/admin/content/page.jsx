@@ -110,8 +110,8 @@ export default function Content() {
     const isValidEmail = (email) =>
       /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 
-    const isValidPhone = (phone) =>
-      /^[6-9]\d{9}$/.test(phone);
+    // const isValidPhone = (phone) =>
+    //   /^[6-9]\d{9}$/.test(phone);
 
     const validateLinks = (arr, type) => {
       for (let item of arr || []) {
@@ -150,7 +150,7 @@ export default function Content() {
           !isValidURL(data.company.logo) &&
           "Invalid company logo URL",
 
-        () => !data?.contact?.phone?.trim() && "Phone number is required",
+        // () => !data?.contact?.phone?.trim() && "Phone number is required",
         // () =>
         //   data?.contact?.phone &&
         //   !isValidPhone(data.contact.phone) &&

@@ -5,7 +5,7 @@ import {
     getServicesByUserId, getMyServices,
     getUsedCategories, getServiceById,
     getUsedSubCategoriesByCategory, getPartnersBySubCategory,
-    toggleServiceStatus, getAvailableServices,
+    toggleServiceStatus, getAvailableServices,getPartnerServices
 } from "../controllers/service.controller.js";
 import { upload } from "../../../middleware/upload.js";
 import { verifyUser } from "../../../middleware/auth.middleware.js";
@@ -24,6 +24,7 @@ router.get("/slug/:slug", getServiceBySlug);
 
 /* ── Partner/Admin ── */
 router.get("/my", verifyUser, authorizeRoles("partner", "admin", "superadmin"), getMyServices);
+router.get("/partner-services", getPartnerServices);
 router.get("/my-services", verifyUser, getMyServices);
 router.get("/partner/:userId", verifyUser, getServicesByUserId);
 
