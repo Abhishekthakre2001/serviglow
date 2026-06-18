@@ -669,11 +669,7 @@ export const getUsedCategories = asyncHandler(async (req, res) => {
       AND pp.service_areas != ''
       AND JSON_VALID(pp.service_areas)
 
-     AND (
-      JSON_CONTAINS(
-          pp.service_areas,
-          JSON_QUOTE(?)
-      )
+    AND JSON_CONTAINS(pp.service_areas, CONCAT('"', ? ,'"'))
       OR
       JSON_CONTAINS(
           pp.service_areas,
