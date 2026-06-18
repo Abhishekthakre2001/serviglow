@@ -5,6 +5,8 @@ import { AdminModel } from "../models/admin.model.js";
 import { asyncHandler } from "../../../utils/asyncHandler.js";
 import { generateAccessRefreshToken } from "../../../utils/generateToken.js";
 import { sendMail } from "../../../utils/sendMail.js";
+import fs from "fs";
+import path from "path";
 
 const loginUrl = process.env.LOGIN_URL;
 
@@ -1205,5 +1207,68 @@ export const deletePage = asyncHandler(async (req, res) => {
   res.status(200).json({
     success: true,
     message: "Page deleted successfully",
+  });
+});
+
+
+export const deletePartnerDocument = asyncHandler(async (req, res) => {
+  const { partnerId, documentType } = req.params;
+
+  const allowedFields = [
+    "doc_business_license",
+    "doc_certificate",
+    "doc_insurance",
+    "doc_tax_id",
+    "doc_corporation_cert",
+    "doc_gov_id",
+    "logo",
+  ];
+
+  if (!allowedFields.includes(documentType)) {
+    return res.status(400).json({
+      success: false,
+      message: "Invalid document type",
+    });
+  }
+
+  const [partners] = await pool.query(
+    `SELECT ${documentType} FROM partner_profiles WHERE id = ?`,
+    [partnerId]
+  );
+
+  if (!partners.length) {
+    return res.status(404).json({
+      success: false,
+      message: "Partner not found",
+    });
+  }
+
+  const filePath = partners[0][documentType];
+
+  if (!filePath) {
+    return res.status(404).json({
+      success: false,
+      message: "Document not found",
+    });
+  }
+
+  // Delete file from uploads folder
+  const absolutePath = path.join(process.cwd(), filePath.replace(/\\/g, "/"));
+
+  if (fs.existsSync(absolutePath)) {
+    fs.unlinkSync(absolutePath);
+  }
+
+  // Remove path from DB
+  await pool.query(
+    `UPDATE partner_profiles
+     SET ${documentType} = NULL
+     WHERE id = ?`,
+    [partnerId]
+  );
+
+  res.status(200).json({
+    success: true,
+    message: "Document deleted successfully",
   });
 });

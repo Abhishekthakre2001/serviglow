@@ -12,6 +12,7 @@ import partnerApi from "@/services/partnerApi";
 import AdminGuard from "@/app/admin/AdminGuard";
 import Alert from "@/components/ui/Conformation";
 import ExportApi from "@/services/exportApi";
+import { BrushCleaning } from 'lucide-react';
 
 /* ================= STATUS BADGE ================= */
 
@@ -52,7 +53,7 @@ export default function Pathners() {
 
   const router = useRouter();
   /* ================= STATE ================= */
-  const { data, loading } = useFetchData(partnerApi.getProfile, []);
+  const { data, loading, reload } = useFetchData(partnerApi.getProfile, []);
   const [partners, setPartners] = useState([]);
   const [viewPartner, setViewPartner] = useState(null);
   const [alertConfig, setAlertConfig] = useState({
@@ -62,6 +63,39 @@ export default function Pathners() {
     message: "",
     onConfirm: null,
   });
+
+  const handleDeleteDocument = async (field) => {
+    try {
+      await partnerApi.deletePartnerDocument(viewPartner.id, field);
+
+      setViewPartner(prev => ({
+        ...prev,
+        raw: {
+          ...prev.raw,
+          [field]: null,
+        },
+      }));
+
+      setAlertConfig({
+        open: true,
+        type: "success",
+        title: "Deleted",
+        message: "Document deleted successfully",
+      });
+
+      await reload();
+
+
+    } catch (error) {
+      setAlertConfig({
+        open: true,
+        type: "error",
+        title: "Error",
+        message:
+          error?.response?.data?.message || "Failed to delete document",
+      });
+    }
+  };
 
   const handleExportPartners = async (status) => {
     try {
@@ -229,7 +263,34 @@ export default function Pathners() {
     return `${imagebaseurl}/${String(path).replace(/\\/g, "/")}`;
   };
 
-  console.log("viewPartner", viewPartner)
+  const documents = [
+    {
+      key: "doc_business_license",
+      label: "Business License",
+    },
+    {
+      key: "doc_certificate",
+      label: "Certificate",
+    },
+    {
+      key: "doc_insurance",
+      label: "Insurance",
+    },
+    {
+      key: "doc_tax_id",
+      label: "Tax ID",
+    },
+    {
+      key: "doc_corporation_cert",
+      label: "Corporation Certificate",
+    },
+    {
+      key: "doc_gov_id",
+      label: "Government ID",
+    },
+  ];
+
+
   return (
     <>
       <AdminGuard>
@@ -680,7 +741,7 @@ export default function Pathners() {
 
                   <div className="flex flex-wrap gap-3">
 
-                    {viewPartner.raw.doc_business_license && (
+                    {/* {viewPartner.raw.doc_business_license && (
                       <a
                         href={getImageUrl(viewPartner.raw.doc_business_license)}
                         target="_blank"
@@ -689,9 +750,28 @@ export default function Pathners() {
                       >
                         Business License
                       </a>
-                    )}
+                    )} */}
+                    <div className="flex items-center overflow-hidden rounded-lg shadow-sm">
+                      <a
+                        href={getImageUrl(viewPartner.raw.doc_business_license)}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="px-4 py-2 bg-blue-600 text-white text-sm hover:bg-blue-700"
+                      >
+                        Business License
+                      </a>
 
-                    {viewPartner.raw.doc_certificate && (
+                      <button
+                        onClick={() =>
+                          handleDeleteDocument("doc_business_license")
+                        }
+                        className="px-3 py-2 bg-red-600 text-white hover:bg-red-700"
+                      >
+                        <BrushCleaning size={16} />
+                      </button>
+                    </div>
+
+                    {/* {viewPartner.raw.doc_certificate && (
                       <a
                         href={getImageUrl(viewPartner.raw.doc_certificate)}
                         target="_blank"
@@ -744,8 +824,36 @@ export default function Pathners() {
                       >
                         Government ID
                       </a>
-                    )}
+                    )} */}
 
+                    <div className="flex flex-wrap gap-3">
+                      {documents.map(
+                        (doc) =>
+                          viewPartner?.raw?.[doc.key] && (
+                            <div
+                              key={doc.key}
+                              className="flex items-center overflow-hidden rounded-lg shadow-sm"
+                            >
+                              <a
+                                href={getImageUrl(viewPartner.raw[doc.key])}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="px-4 py-2 bg-blue-600 text-white text-sm hover:bg-blue-700"
+                              >
+                                {doc.label}
+                              </a>
+
+                              <button
+                                onClick={() => handleDeleteDocument(doc.key)}
+                                className="px-3 py-2 bg-red-600 text-white hover:bg-red-700"
+                                title={`Delete ${doc.label}`}
+                              >
+                                <BrushCleaning size={16} />
+                              </button>
+                            </div>
+                          )
+                      )}
+                    </div>
                   </div>
                 </div>
 

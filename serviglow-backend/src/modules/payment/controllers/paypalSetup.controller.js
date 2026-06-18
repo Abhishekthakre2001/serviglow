@@ -9,11 +9,62 @@ const ALLOWED_PLAN_KEYS = [
   "PREMIUM",
 ];
 
+export const listPaypalProducts = async (req, res) => {
+  try {
+    const products = await paypalRequest(
+      "GET",
+      "/v1/catalogs/products?page_size=100"
+    );
+
+    return res.status(200).json({
+      success: true,
+      data: products,
+    });
+
+  } catch (err) {
+    return res.status(500).json({
+      success: false,
+      message: err?.response?.data || err.message,
+    });
+  }
+};
+
+export const updatePaypalProduct = async (req, res) => {
+  try {
+    const { productId } = req.params;
+    const { name } = req.body;
+
+    const response = await paypalRequest(
+      "PATCH",
+      `/v1/catalogs/products/${productId}`,
+      [
+        {
+          op: "replace",
+          path: "/name",
+          value: name,
+        },
+      ]
+    );
+
+    return res.status(200).json({
+      success: true,
+      message: "Product updated successfully",
+      data: response,
+    });
+  } catch (err) {
+    return res.status(500).json({
+      success: false,
+      message: err?.response?.data || err.message,
+    });
+  }
+};
+
+
 // POST /api/v1/payment/paypal/product
 export const createPaypalProduct = async (req, res) => {
   try {
     const {
-      name = "Urban Subscriptions",
+      name = "Serviglow Subscriptions",
       description = "Partner subscriptions product",
       type = "SERVICE",
       category = "SOFTWARE",

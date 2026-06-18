@@ -20,6 +20,8 @@ import {
   listPaypalPlans,
   updatePlanPrice,
   createNewPlanPrice,
+  updatePaypalProduct,
+  listPaypalProducts
 } from "../controllers/paypalSetup.controller.js";
 
 import { paypalWebhookHandler } from "../webhooks/paypal.webhook.js";
@@ -29,6 +31,14 @@ import { rawBodySaver } from "../../../utils/rawBody.js";
 const router = express.Router();
 
 // ---- Setup APIs ----
+// list of paypal product
+router.get("/paypal/products", listPaypalProducts);
+
+// Update of paypal product
+router.patch(
+  "/paypal/product/:productId",
+  updatePaypalProduct
+);
 router.post("/paypal/product", createPaypalProduct);
 router.post("/paypal/plan", createPaypalPlan);
 router.get("/paypal/plans", listPaypalPlans);

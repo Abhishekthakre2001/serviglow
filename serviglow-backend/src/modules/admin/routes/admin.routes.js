@@ -6,9 +6,9 @@ import {
   getAdminDashboard, getAdminLast7DaysBookings, updateAdminProfile,
   upsertFooter, getFooter, upsertHomeSection, getHomeSection,
   updateBanner, getBanner,
-  getPolicies, upsertPolicy, deletePolicy, getPolicy, getAdmins, updateAdmin, deleteAdmin, updateAdminStatus, updateAdminPermissions, getAdminPermissions,upsertBookingTerms,
-  getBookingTerms,
-  createPage, getAllPages, getPageBySlug, updatePage, deletePage
+  getPolicies, upsertPolicy, deletePolicy, getPolicy, getAdmins, updateAdmin, deleteAdmin, updateAdminStatus, updateAdminPermissions, getAdminPermissions, upsertBookingTerms,
+  getBookingTerms, deletePartnerDocument
+  , createPage, getAllPages, getPageBySlug, updatePage, deletePage
 } from "../controllers/admin.controller.js";
 import { verifyUser } from "../../../middleware/auth.middleware.js";
 import { authorizeRoles } from "../../../middleware/role.middleware.js";
@@ -53,6 +53,12 @@ router.patch("/admins/:id/status", ...adminOnly, updateAdminStatus);
 router.patch("/admins/:id/permissions", ...adminOnly, updateAdminPermissions);
 
 router.get("/admins/:id/permissions", getAdminPermissions);
+
+router.delete(
+  "/partners/:partnerId/document/:documentType",
+  ...adminOnly,
+  deletePartnerDocument
+);
 
 // Public
 router.get("/booking-terms", getBookingTerms);

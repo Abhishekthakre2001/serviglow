@@ -5,8 +5,8 @@ const partnerApi = {
     return res.data;
   },
 
- getRevenueDetailsByPartnerId: (id, page, limit) =>
-  axiosInstance.get(`/partner/revenue-details/${id}?page=${page}&limit=${limit}`),
+  getRevenueDetailsByPartnerId: (id, page, limit) =>
+    axiosInstance.get(`/partner/revenue-details/${id}?page=${page}&limit=${limit}`),
 
   // Get single partner
   getPartnerById: (id) =>
@@ -21,6 +21,10 @@ const partnerApi = {
 
   togglePartnerActive: (id, isActive) =>
     axiosInstance.patch(`/partner/partners/${id}/toggle-active`, { isActive }),
+
+  deletePartnerDocument: (partnerId, documentType = {}) =>
+    axiosInstance.delete(`/admin/partners/${partnerId}/document/${documentType}`),
+
 };
 
 

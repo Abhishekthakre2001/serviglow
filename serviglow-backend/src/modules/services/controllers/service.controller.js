@@ -583,83 +583,67 @@ export const getUsedCategories = asyncHandler(async (req, res) => {
   // ZIP FILTER
   // ==================================================
 
+
+
+  // ==================================================
+  // ZIP FILTER
+  // ==================================================
+
   if (zipCode) {
 
-    // keep only numbers
-    const numericZip =
-      String(zipCode).replace(/\D/g, "");
+    const numericZip = String(zipCode).replace(/\D/g, "");
 
-    // invalid zip
     if (numericZip.length < 3) {
-
       return res.status(200).json({
         success: true,
         count: 0,
         data: [],
         topCarouselCategories: [],
       });
-
     }
 
-    // JOIN PARTNER PROFILE
     categoriesQuery += `
-      INNER JOIN partner_profiles pp
-        ON pp.user_id = s.created_by
-    `;
+    INNER JOIN partner_profiles pp
+      ON pp.user_id = s.created_by
+  `;
 
     categoriesQuery += `
-      WHERE
-        s.is_active = true
-        AND c.status = 1
-        AND pp.is_active = 1
-        AND pp.approval_status = 'approved'
+    WHERE
+      s.is_active = 1
+      AND c.status = 1
+      AND pp.is_active = 1
+      AND pp.approval_status = 'approved'
 
-        AND pp.service_areas IS NOT NULL
-        AND pp.service_areas != ''
-        AND JSON_VALID(pp.service_areas)
+      AND pp.service_areas IS NOT NULL
+      AND pp.service_areas != ''
+      AND JSON_VALID(pp.service_areas)
 
-        AND EXISTS (
-
-  SELECT 1
-
-  FROM JSON_TABLE(
-
-    CASE
-      WHEN pp.service_areas IS NULL
-        OR pp.service_areas = ''
-        OR JSON_VALID(pp.service_areas) = 0
-      THEN '[]'
-      ELSE pp.service_areas
-    END,
-
-    '$[*]'
-
-    COLUMNS (
-      zip_code VARCHAR(30) PATH '$'
-    )
-
-  ) jt
-
-  WHERE jt.zip_code = ?
-
+     AND (
+      JSON_CONTAINS(
+          pp.service_areas,
+          JSON_QUOTE(?)
+      )
+      OR
+      JSON_CONTAINS(
+          pp.service_areas,
+          CAST(? AS JSON)
+      )
 )
-    `;
+  `;
 
     queryParams.push(numericZip);
+    queryParams.push(numericZip);
 
-  }
+    console.log("ZIP:", numericZip);
+    console.log("PARAMS:", queryParams);
 
-  // ==================================================
-  // WITHOUT ZIP
-  // ==================================================
-
-  else {
+  } else {
 
     categoriesQuery += `
-      WHERE
-        s.is_active = true
-        AND c.status = 1
-    `;
+    WHERE
+      s.is_active = 1
+      AND c.status = 1
+  `;
   }
 
   // ==================================================
@@ -671,10 +655,14 @@ export const getUsedCategories = asyncHandler(async (req, res) => {
     ORDER BY c.created_at DESC
   `;
 
+  console.log("FINAL SQL:", categoriesQuery);
+  console.log("FINAL PARAMS:", queryParams);
   const [categories] = await pool.query(
     categoriesQuery,
     queryParams
   );
+
+  console.log("CATEGORIES RESULT:", categories);
 
   // ==================================================
   // TOP CAROUSEL LOGIC (UNCHANGED)
@@ -1072,18 +1060,22 @@ export const getAvailableServices = asyncHandler(async (req, res) => {
   const values = [startOfMonth, endOfMonth, categoryId, subCategoryId];
 
   // ---------------- PINCODE FILTER ----------------
-  const zip = pincode && pincode.trim() !== "" ? String(pincode) : null;
+  const zip = pincode && pincode.trim() !== ""
+    ? String(pincode).trim()
+    : null;
 
   if (zip) {
     query += `
-    AND (
-      JSON_CONTAINS(pp.service_areas, JSON_QUOTE(?))
-      OR JSON_CONTAINS(pp.service_areas, CAST(? AS JSON))
-    )
+    AND pp.service_areas IS NOT NULL
+    AND pp.service_areas != ''
+    AND JSON_VALID(pp.service_areas)
+    AND JSON_CONTAINS(
+          pp.service_areas,
+          JSON_QUOTE(?)
+        )
   `;
 
-    values.push(String(zip));   // "400365"
-    values.push(Number(zip));   // 400365
+    values.push(zip);
   }
 
   const [rows] = await pool.query(query, values);
