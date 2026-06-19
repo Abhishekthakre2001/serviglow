@@ -5,7 +5,7 @@ import { PLAN_KEYS } from "../constant/payment.keys.js";
 
 const ALLOWED_PLAN_KEYS = [
   "BASIC",
-  "MODERATE",
+  "MODERN",
   "PREMIUM",
 ];
 

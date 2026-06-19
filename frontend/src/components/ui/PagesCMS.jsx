@@ -92,7 +92,19 @@ export default function PagesCMS() {
 
             setModalOpen(true);
         } catch (err) {
-            showAlert("error", "Error", "Failed to load page");
+            if (err?.response?.status === 413) {
+                showAlert(
+                    "error",
+                    "Content Too Large",
+                    "The page content or images exceed the server upload limit. Please reduce the content size or contact the server administrator to increase the request payload limit."
+                );
+            } else {
+                showAlert(
+                    "error",
+                    "Error",
+                    err?.response?.data?.message || "Save failed"
+                );
+            }
         }
     };
 
@@ -144,7 +156,19 @@ export default function PagesCMS() {
             resetForm();
             fetchPages();
         } catch (err) {
-            showAlert("error", "Error", "Save failed");
+            if (err?.response?.status === 413) {
+                showAlert(
+                    "error",
+                    "Content Too Large",
+                    "The page content or images exceed the server upload limit. Please reduce the content size or contact the server administrator to increase the request payload limit."
+                );
+            } else {
+                showAlert(
+                    "error",
+                    "Error",
+                    err?.response?.data?.message || "Save failed"
+                );
+            }
         } finally {
             setLoading(false);
         }
