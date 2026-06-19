@@ -47,15 +47,15 @@ export const loginService = async ({ email, password }) => {
       status: 403,
       message: "User Not Found",
     };
-
-    // ── Check user active/inactive ──
-    if (user.status !== "active") {
-      return {
-        status: 403,
-        message: "Your account is inactive. Please contact admin.",
-      };
-    }
   }
+  // ── Check user active/inactive ──
+  if (user.status !== "active") {
+    return {
+      status: 403,
+      message: "Your account is inactive. Please contact admin.",
+    };
+  }
+
 
   if (user.role === "partner") {
 
