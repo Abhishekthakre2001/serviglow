@@ -92,11 +92,17 @@ export default function PagesCMS() {
 
             setModalOpen(true);
         } catch (err) {
-            if (err?.response?.status === 413) {
+            const status = err?.response?.status;
+
+            if (
+                status === 413 ||
+                err?.message?.includes("413") ||
+                err?.toString()?.includes("413")
+            ) {
                 showAlert(
                     "error",
                     "Content Too Large",
-                    "The page content or images exceed the server upload limit. Please reduce the content size or contact the server administrator to increase the request payload limit."
+                    "The page content or images are too large for the server. Please reduce the content size or contact the server administrator to increase the upload/request size limit."
                 );
             } else {
                 showAlert(
@@ -156,11 +162,17 @@ export default function PagesCMS() {
             resetForm();
             fetchPages();
         } catch (err) {
-            if (err?.response?.status === 413) {
+            const status = err?.response?.status;
+
+            if (
+                status === 413 ||
+                err?.message?.includes("413") ||
+                err?.toString()?.includes("413")
+            ) {
                 showAlert(
                     "error",
                     "Content Too Large",
-                    "The page content or images exceed the server upload limit. Please reduce the content size or contact the server administrator to increase the request payload limit."
+                    "The page content or images are too large for the server. Please reduce the content size or contact the server administrator to increase the upload/request size limit."
                 );
             } else {
                 showAlert(
